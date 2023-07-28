@@ -1,0 +1,36 @@
+# main links
+main:
+  - title: "Publications"
+    url: /articles/ 
+
+  - title: "Blog Posts"
+    url: /year-archive/
+
+  - title: "Reading Log"
+    url: /teaching/
+
+  - title: "Talks"
+    url: /talks/
+    
+  - title: "Contact and Cv"
+    url: /contact/
+
+  #- title: "CV"
+  #  url: /cv/
+
+#Cv extension
+  #- title: "CV"
+  #  url: /cv/    
+
+
+#main:
+  #- title: "Quick-Start Guide"
+  #  url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
+  # - title: "About"
+  #   url: https://mmistakes.github.io/minimal-mistakes/about/
+  # - title: "Sample Posts"
+  #   url: /year-archive/
+  # - title: "Sample Collections"
+  #   url: /collection-archive/
+  # - title: "Sitemap"
+  #   url: /sitemap/

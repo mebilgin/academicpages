@@ -1,0 +1,12 @@
+---
+layout: archive
+title: "Personal Issues"
+permalink: /personal_issue/
+author_profile: true
+---
+
+{% include base_path %}
+
+{% for post in site.personal_issue reversed %}
+  {% include archive-single.html %}
+{% endfor %}
