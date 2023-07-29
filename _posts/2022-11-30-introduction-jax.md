@@ -10,6 +10,10 @@ permalink: /posts/2022/11/introduction-jax/
 
 <!--redirect_to: /articles/2012-05-02-altchi-ipoxp -->
 
+
+<!--
+
+
 The content will be published on 10-11-2021.
 
 ## Introduction JAX
@@ -36,3 +40,6 @@ space space space space
  year = {2017}
 }
 ```
+
+-->
+

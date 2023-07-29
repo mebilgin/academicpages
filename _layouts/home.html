@@ -19,7 +19,7 @@ layout: archive
           {% endif %}
     {% endfor %}
 
-  {% for post in site.expressions | reverse %}
+  {% for post in site.articles | reverse %}
         {% include archive-single.html type=entries_layout %}
           {% if post %}
             {% assign categories = post.categories %}

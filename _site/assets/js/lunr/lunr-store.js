@@ -12,19 +12,19 @@ var store = [{
         "teaser": null
       },{
         "title": "Tensors",
-        "excerpt":"The content will be published on 30-06-2022.     ","categories": ["posts"],
+        "excerpt":"    ","categories": ["posts"],
         "tags": ["tensor"],
         "url": "/posts/2022/06/tensors/",
         "teaser": null
       },{
         "title": "Factorization and Decomposition",
-        "excerpt":"The content will be published on 20-08-2022.      ","categories": ["posts"],
+        "excerpt":"     ","categories": ["posts"],
         "tags": ["tensor"],
         "url": "/posts/2022/08/factor-decomp/",
         "teaser": null
       },{
         "title": "Introduction JAX",
-        "excerpt":"The content will be published on 10-11-2021. Introduction JAX intro intro intro intro intro intro intro intro intro intro intro intro There will be Introduction in here space space space space space space space space space space space space @inproceedings{bilgin2017robot, author = {Bilgin, Muhammed and Ensari, Tolga}, booktitle = {2017...","categories": ["posts"],
+        "excerpt":"    ","categories": ["posts"],
         "tags": ["jax","tensor","tensorflow","pytorch"],
         "url": "/posts/2022/11/introduction-jax/",
         "teaser": null
@@ -57,6 +57,12 @@ var store = [{
         "excerpt":"Link to slides   In this talk, we talked about Graph Neural Networks and Applications. In the speech, graph from various methods of neural networks; we talked about methods such as classification, embeddings, attention.  ","categories": [],
         "tags": [],
         "url": "/talks/iu-gnn-end-app/",
+        "teaser": null
+      },{
+        "title": "Data Scientist and ML Engineer Career RoadMap",
+        "excerpt":"Link to slides In this talk, we talked about Data Scientist and ML Engineer Career RoadMap and Difficulties Will Face. We talked about where and for what math, statistics/probability, algebra and linear algebra subjects are needed by Data Scientists and ML Engineers, how Data teams are formed and the steps...","categories": [],
+        "tags": [],
+        "url": "/talks/beykent-roadmap/",
         "teaser": null
       },{
         "title": "08-05-2022 Daily Reading Log",

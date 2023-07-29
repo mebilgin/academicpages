@@ -1,30 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2023-07-28T14:28:51+03:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Muhammed Bilgin</title><subtitle>Research Scientist&lt;br/&gt; Machine Learning and NLP</subtitle><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><entry><title type="html">Introduction JAX</title><link href="http://localhost:4000/posts/2022/11/introduction-jax/" rel="alternate" type="text/html" title="Introduction JAX" /><published>2022-11-30T00:00:00+03:00</published><updated>2022-11-30T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/11/introduction-jax</id><content type="html" xml:base="http://localhost:4000/posts/2022/11/introduction-jax/">&lt;!--redirect_to: /articles/2012-05-02-altchi-ipoxp --&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2023-07-29T15:51:21+03:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Muhammed Bilgin</title><subtitle>Research Scientist&lt;br/&gt; Machine Learning and NLP</subtitle><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><entry><title type="html">Introduction JAX</title><link href="http://localhost:4000/posts/2022/11/introduction-jax/" rel="alternate" type="text/html" title="Introduction JAX" /><published>2022-11-30T00:00:00+03:00</published><updated>2022-11-30T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/11/introduction-jax</id><content type="html" xml:base="http://localhost:4000/posts/2022/11/introduction-jax/">&lt;!--redirect_to: /articles/2012-05-02-altchi-ipoxp --&gt;
 
-&lt;p&gt;The content will be published on 10-11-2021.&lt;/p&gt;
+&lt;!--
 
-&lt;h2 id=&quot;introduction-jax&quot;&gt;Introduction JAX&lt;/h2&gt;
+
+The content will be published on 10-11-2021.
+
+## Introduction JAX
 &lt;pre&gt;
 intro intro intro intro
 intro intro intro intro
 intro intro intro intro
 &lt;/pre&gt;
 
-&lt;h2 id=&quot;there-will-be-introduction-in-here&quot;&gt;There will be Introduction in here&lt;/h2&gt;
+## There will be Introduction in here
 &lt;pre&gt;
 space space space space
 space space space space
 space space space space
 &lt;/pre&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@inproceedings&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;bilgin2017robot,
- author &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;Bilgin, Muhammed and Ensari, Tolga&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
- booktitle &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;2017 Electric Electronics, Computer Science, Biomedical Engineerings Meeting &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;EBBT&lt;span class=&quot;o&quot;&gt;)}&lt;/span&gt;,
- organization &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;IEEE&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
- pages &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;1--7&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
- title &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;Robot localization with Monte Carlo method&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
- year &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;2017&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><category term="posts" /><category term="jax" /><category term="tensor" /><category term="tensorflow" /><category term="pytorch" /><summary type="html">Introduction JAX</summary></entry><entry><title type="html">Factorization and Decomposition</title><link href="http://localhost:4000/posts/2022/08/factor-decomp/" rel="alternate" type="text/html" title="Factorization and Decomposition" /><published>2022-08-20T00:00:00+03:00</published><updated>2022-08-20T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/08/factor-decomp</id><content type="html" xml:base="http://localhost:4000/posts/2022/08/factor-decomp/">&lt;p&gt;The content will be published on 20-08-2022.&lt;/p&gt;
+```bash
+@inproceedings{bilgin2017robot,
+ author = {Bilgin, Muhammed and Ensari, Tolga},
+ booktitle = {2017 Electric Electronics, Computer Science, Biomedical Engineerings Meeting (EBBT)},
+ organization = {IEEE},
+ pages = {1--7},
+ title = {Robot localization with Monte Carlo method},
+ year = {2017}
+}
+```
+
+--&gt;</content><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><category term="posts" /><category term="jax" /><category term="tensor" /><category term="tensorflow" /><category term="pytorch" /><summary type="html">Introduction JAX</summary></entry><entry><title type="html">Factorization and Decomposition</title><link href="http://localhost:4000/posts/2022/08/factor-decomp/" rel="alternate" type="text/html" title="Factorization and Decomposition" /><published>2022-08-20T00:00:00+03:00</published><updated>2022-08-20T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/08/factor-decomp</id><content type="html" xml:base="http://localhost:4000/posts/2022/08/factor-decomp/">&lt;!--
+The content will be published on 20-08-2022.
+
+
+--&gt;
 
 &lt;!--
 
@@ -73,7 +83,10 @@ $$
  \varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } } 
 $$
 
-KaTeX --&gt;</content><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><category term="posts" /><category term="tensor" /><summary type="html">Links about our research</summary></entry><entry><title type="html">Tensors</title><link href="http://localhost:4000/posts/2022/06/tensors/" rel="alternate" type="text/html" title="Tensors" /><published>2022-06-30T00:00:00+03:00</published><updated>2022-06-30T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/06/tensors</id><content type="html" xml:base="http://localhost:4000/posts/2022/06/tensors/">&lt;p&gt;The content will be published on 30-06-2022.&lt;/p&gt;
+KaTeX --&gt;</content><author><name>Muhammed Bilgin</name><email>mebilgin@mebilgin.com</email></author><category term="posts" /><category term="tensor" /><summary type="html">Links about our research</summary></entry><entry><title type="html">Tensors</title><link href="http://localhost:4000/posts/2022/06/tensors/" rel="alternate" type="text/html" title="Tensors" /><published>2022-06-30T00:00:00+03:00</published><updated>2022-06-30T00:00:00+03:00</updated><id>http://localhost:4000/posts/2022/06/tensors</id><content type="html" xml:base="http://localhost:4000/posts/2022/06/tensors/">&lt;!-- 
+The content will be published on 30-06-2022.
+
+--&gt;
 
 &lt;!--
 Over the past few years, our team has been working on a few interrelated research projects about the work of maintaining Free &amp; Open-Source Software (FOSS) projects. For more information about our project, read [this blog post](link) we wrote when we first received our research grant from the Ford &amp; Sloan Foundations. Our team is an interdisciplinary mix tackling these issues from qualitative and quantitative perspectives, and many of us have also been maintainers of various FOSS projects:
