@@ -1,56 +1,34 @@
 ---
 permalink: /
-title: "Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites"
+title: "About"
 author_profile: true
 redirect_from: 
   - /about/
   - /about.html
 ---
 
-This is the front page of a website that is powered by the [Academic Pages template](https://github.com/academicpages/academicpages.github.io) and hosted on GitHub pages. [GitHub pages](https://pages.github.com) is a free service in which websites are built and hosted from code and data stored in a GitHub repository, automatically updating when a new commit is made to the repository. This template was forked from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/) created by Michael Rose, and then extended to support the kinds of content that academics have: publications, talks, teaching, a portfolio, blog posts, and a dynamically-generated CV. Incidentally, these same features make it a great template for anyone that needs to show off a professional template!
+At the intersection of human cognition and artificial systems, I research the foundations of intelligence, reasoning, and decision-making mechanisms.
 
- You can fork [this template](https://github.com/academicpages/academicpages.github.io) right now, modify the configuration and Markdown files, add your own PDFs and other content, and have your own site for free, with no ads!
-
-A data-driven personal website
-======
-Like many other Jekyll-based GitHub Pages templates, Academic Pages makes you separate the website's content from its form. The content & metadata of your website are in structured Markdown files, while various other files constitute the theme, specifying how to transform that content & metadata into HTML pages. You keep these various Markdown (.md), YAML (.yml), HTML, and CSS files in a public GitHub repository. Each time you commit and push an update to the repository, the [GitHub pages](https://pages.github.com/) service creates static HTML pages based on these files, which are hosted on GitHub's servers free of charge.
-
-Many of the features of dynamic content management systems (like Wordpress) can be achieved in this fashion, using a fraction of the computational resources and with far less vulnerability to hacking and DDoSing. You can also modify the theme to your heart's content without touching the content of your site. If you get to a point where you've broken something in Jekyll/HTML/CSS beyond repair, your Markdown files describing your talks, publications, etc. are safe. You can rollback the changes or even delete the repository and start over - just be sure to save the Markdown files! You can also write scripts that process the structured data on the site, such as [this one](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.ipynb) that analyzes metadata in pages about talks to display [a map of every location you've given a talk](https://academicpages.github.io/talkmap.html).
-
-For those users that need more advanced functionality, the template also supports the following popular tools:
-- [MathJax](https://www.mathjax.org/) for mathematical equations
-- [Mermaid](https://mermaid.js.org/) for diagraming
-- [Plotly](https://plotly.com/javascript/) for plotting
-
-Getting started
-======
-1. Register a GitHub account if you don't have one and confirm your e-mail (required!)
-1. Fork [this template](https://github.com/academicpages/academicpages.github.io) by clicking the "Use this template" button in the top right. 
-1. Go to the repository's settings (rightmost item in the tabs that start with "Code", should be below "Unwatch"). Rename the repository "[your GitHub username].github.io", which will also be your website's URL.
-1. Set site-wide configuration and create content & metadata (see below -- also see [this set of diffs](https://archive.is/3TPas) showing what files were changed to set up [an example site](https://getorg-testacct.github.io) for a user with the username "getorg-testacct")
-1. Upload any files (like PDFs, .zip files, etc.) to the files/ directory. They will appear at https://[your GitHub username].github.io/files/example.pdf.  
-1. Check status by going to the repository settings, in the "GitHub pages" section
-
-Site-wide configuration
+Biography
 ------
-The main configuration file for the site is in the base directory in [_config.yml](https://github.com/academicpages/academicpages.github.io/blob/master/_config.yml), which defines the content in the sidebars and other site-wide features. You will need to replace the default variables with ones about yourself and your site's github repository. The configuration file for the top menu is in [_data/navigation.yml](https://github.com/academicpages/academicpages.github.io/blob/master/_data/navigation.yml). For example, if you don't have a portfolio or blog posts, you can remove those items from that navigation.yml file to remove them from the header. 
+I am currently pursuing my research as an independent researcher in the Cognitive Science program at Yeditepe University and Computational Intelligence group at Istanbul University.
+Prior to that, I worked in industry for 14 years on Machine Learning and Artificial Intelligence; I led teams in Engineering Management and Director of AI Engineering positions and built artificial intelligence systems. In the fast-paced world of industry, my passion for getting to the root of the problem rather than just producing practical solutions led me to academia and independent research.
 
-Create content & metadata
+Publications
 ------
-For site content, there is one Markdown file for each type of content, which are stored in directories like _publications, _talks, _posts, _teaching, or _pages. For example, each talk is a Markdown file in the [_talks directory](https://github.com/academicpages/academicpages.github.io/tree/master/_talks). At the top of each Markdown file is structured data in YAML about the talk, which the theme will parse to do lots of cool stuff. The same structured data about a talk is used to generate the list of talks on the [Talks page](https://academicpages.github.io/talks), each [individual page](https://academicpages.github.io/talks/2012-03-01-talk-1) for specific talks, the talks section for the [CV page](https://academicpages.github.io/cv), and the [map of places you've given a talk](https://academicpages.github.io/talkmap.html) (if you run this [python file](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.py) or [Jupyter notebook](https://github.com/academicpages/academicpages.github.io/blob/master/talkmap.ipynb), which creates the HTML for the map based on the contents of the _talks directory).
+{% for post in site.publications reversed limit:5 %}<div style="margin-bottom:1.5em;padding-bottom:1.5em;border-bottom:1px solid #eee;">
+<h3 style="margin:0 0 0.2em;font-size:1em;"><a href="{{ post.url }}">{{ post.title }}</a></h3>
+{% if post.authors %}<p style="margin:0 0 0.15em;font-size:0.85em;">{{ post.authors }}</p>{% endif %}
+{% if post.venue %}<p style="margin:0 0 0.4em;font-size:0.8em;font-weight:bold;">{{ post.venue }}{% if post.date %} {{ post.date | date: "%Y" }}{% endif %}</p>{% endif %}
+{% if post.tldr %}<p style="margin:0 0 0.5em;font-size:0.85em;"><span style="font-weight:bold;font-variant:small-caps;">tldr</span>&nbsp;&nbsp;{{ post.tldr }}</p>{% endif %}
+<p style="margin:0;display:flex;flex-wrap:wrap;gap:0.35em;">{% if post.paperurl and post.paperurl != '' %}<a href="{{ post.paperurl }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.78em;text-decoration:none;"><i class="fa fa-file-pdf" aria-hidden="true"></i> PDF</a>{% endif %}{% if post.arxiv and post.arxiv != '' %}<a href="{{ post.arxiv }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.78em;text-decoration:none;"><i class="ai ai-arxiv" aria-hidden="true"></i> arXiv</a>{% endif %}{% if post.website and post.website != '' %}<a href="{{ post.website }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.78em;text-decoration:none;"><i class="fa fa-globe" aria-hidden="true"></i> Website</a>{% endif %}{% if post.github and post.github != '' %}<a href="{{ post.github }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.78em;text-decoration:none;"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>{% endif %}</p>
+</div>{% endfor %}
 
-**Markdown generator**
-
-The repository includes [a set of Jupyter notebooks](https://github.com/academicpages/academicpages.github.io/tree/master/markdown_generator
-) that converts a CSV containing structured data about talks or presentations into individual Markdown files that will be properly formatted for the Academic Pages template. The sample CSVs in that directory are the ones I used to create my own personal website at stuartgeiger.com. My usual workflow is that I keep a spreadsheet of my publications and talks, then run the code in these notebooks to generate the Markdown files, then commit and push them to the GitHub repository.
-
-How to edit your site's GitHub repository
+Posts
 ------
-Many people use a git client to create files on their local computer and then push them to GitHub's servers. If you are not familiar with git, you can directly edit these configuration and Markdown files directly in the github.com interface. Navigate to a file (like [this one](https://github.com/academicpages/academicpages.github.io/blob/master/_talks/2012-03-01-talk-1.md) and click the pencil icon in the top right of the content preview (to the right of the "Raw | Blame | History" buttons). You can delete a file by clicking the trashcan icon to the right of the pencil icon. You can also create new files or upload files by navigating to a directory and clicking the "Create new file" or "Upload files" buttons. 
+<ul>
+{% for post in site.posts reversed limit:5 %}
+<li><a href="{{ post.url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
 
-Example: editing a Markdown file for a talk
-![Editing a Markdown file for a talk](/images/editing-talk.png)
-
-For more info
-------
-More info about configuring Academic Pages can be found in [the guide](https://academicpages.github.io/markdown/), the [growing wiki](https://github.com/academicpages/academicpages.github.io/wiki), and you can always [ask a question on GitHub](https://github.com/academicpages/academicpages.github.io/discussions). The [guides for the Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/docs/configuration/) (which this theme was forked from) might also be helpful.

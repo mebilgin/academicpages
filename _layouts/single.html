@@ -40,37 +40,28 @@ layout: default
           <p>Published in <i>{{ page.venue }}</i>, {{ page.date | default: "1900-01-01" | date: "%Y" }} </p>
         {% elsif page.date %}
           <p class="page__date"><strong><i class="fa fa-fw fa-calendar" aria-hidden="true"></i> {{ site.data.ui-text[site.locale].date_label | default: "Published:" }}</strong> <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | default: "1900-01-01" | date: "%B %d, %Y" }}</time></p>
-        {% endif %}    
+        {% endif %}
+
+        {% if page.paperurl or page.arxiv or page.website or page.github or page.slidesurl %}
+        <p style="display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.5em;">
+          {%- if page.paperurl and page.paperurl != '' -%}<a href="{{ page.paperurl }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.82em;text-decoration:none;"><i class="fa fa-file-pdf" aria-hidden="true"></i> PDF</a>{%- endif -%}
+          {%- if page.arxiv and page.arxiv != '' -%}<a href="{{ page.arxiv }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.82em;text-decoration:none;"><i class="ai ai-arxiv" aria-hidden="true"></i> arXiv</a>{%- endif -%}
+          {%- if page.website and page.website != '' -%}<a href="{{ page.website }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.82em;text-decoration:none;"><i class="fa fa-globe" aria-hidden="true"></i> Website</a>{%- endif -%}
+          {%- if page.github and page.github != '' -%}<a href="{{ page.github }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.82em;text-decoration:none;"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>{%- endif -%}
+          {%- if page.slidesurl and page.slidesurl != '' -%}<a href="{{ page.slidesurl }}" target="_blank" style="display:inline-flex;align-items:center;gap:0.25em;padding:0.15em 0.55em;border:1px solid currentColor;border-radius:4px;font-size:0.82em;text-decoration:none;"><i class="fa fa-chalkboard" aria-hidden="true"></i> Slides</a>{%- endif -%}
+        </p>
+        {% endif %}
         </header>
       {% endunless %}
 
       <section class="page__content" itemprop="text">
         {{ content }}
 
-        {% if page.citation and page.paperurl and page.slidesurl and page.bibtexurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.slidesurl }}">Download Slides</a> | <a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.citation and page.paperurl and page.slidesurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.slidesurl }}">Download Slides</a></p>
-        {% elsif page.citation and page.paperurl and page.bibtexurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.citation and page.paperurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.paperurl }}">Download Paper</a></p>
-        {% elsif page.citation and page.slidesurl and page.bibtexurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.slidesurl }}">Download Slides</a> | <a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.citation and page.slidesurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.slidesurl }}">Download Slides</a></p>
-        {% elsif page.slidesurl and page.bibtexurl %}
-          <p style="font-size: smaller"><a href="{{ page.slidesurl }}">Download Slides</a> | <a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.paperurl and page.bibtexurl %}
-          <p style="font-size: smaller"><a href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.citation and page.bibtexurl %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}<br /><a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
-        {% elsif page.citation %}
-          <p style="font-size: smaller">Recommended citation: {{ page.citation }}</p>
-        {% elsif page.slidesurl %}
-          <p style="font-size: smaller"><a href="{{ page.slidesurl }}">Download Slides</a></p>
-        {% elsif page.bibtexurl %}
-          <p style="font-size: smaller"><a href="{{ page.bibtexurl }}">Download Bibtex</a></p>
+        {% if page.citation %}
+          <div class="notice--info" style="margin-top: 2em;">
+            <h4 style="margin-top: 0;">Cite</h4>
+            <p style="margin-bottom: 0; font-size: 0.85em;">{{ page.citation }}</p>
+          </div>
         {% endif %}
 
         {% if page.link %}<div><a href="{{ page.link }}" class="btn">{{ site.data.ui-text[site.locale].ext_link_label | default: "Direct Link" }}</a></div>{% endif %}
