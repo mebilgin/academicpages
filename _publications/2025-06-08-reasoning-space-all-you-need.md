@@ -6,7 +6,7 @@ permalink: /publication/2024-02-17-reasoning-space-all-you-need
 excerpt: 'This paper is about a famous math equation, $$E=mc^2$$'
 date: 2025-06-08
 venue: 'arXiv'
-authors: '<strong>Doruk Bilgin</strong>'
+authors: '<strong>M. Emre Bilgin</strong>'
 tldr: 'We show that diversity in the reasoning space — rather than model scale — is the key factor for robust generalization in complex reasoning tasks.'
 paperurl: 'https://academicpages.github.io/files/paper3.pdf'
 arxiv: ''
