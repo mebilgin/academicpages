@@ -7,7 +7,7 @@ redirect_from:
   - /about.html
 ---
 
-At the intersection of human cognition and artificial systems, I research the foundations of intelligence, reasoning, and decision-making mechanisms.
+At the intersection of human cognition and artificial systems, I research the foundations of intelligence, reasoning, and decision-making mechanisms with bayesian perspective.
 
 Biography
 ------
