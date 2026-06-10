@@ -24,6 +24,7 @@
     "node": ">= 0.10.0"
   },
   "dependencies": {
+    "firebase-admin": "^13.8.0",
     "fitvids": "^2.1.1",
     "jquery": "^3.7.1",
     "jquery-smooth-scroll": "^2.2.0",

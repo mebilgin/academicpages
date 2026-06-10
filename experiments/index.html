@@ -1,0 +1,1996 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bilgi Mimarisi ve İnanç Güncelleme Deneyi</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --ok: #16a34a;
+      --bad: #dc2626;
+      --warn: #f59e0b;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #eef4ff 0, var(--bg) 42%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 32px 16px;
+    }
+
+    main { width: min(940px, 100%); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .language-switch {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .language-option {
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 14px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .language-option:hover { background: #e2e8f0; color: #0f172a; transform: none; }
+    .language-option.active,
+    .language-option.active:hover {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 8px 0 24px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #60a5fa);
+      transition: width 240ms ease;
+    }
+
+    h1, h2, h3 { margin-top: 0; line-height: 1.15; }
+    h1 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.03em; }
+    h2 { font-size: clamp(23px, 3vw, 31px); letter-spacing: -0.02em; }
+    h3 { font-size: 20px; }
+    p, li { font-size: 17px; line-height: 1.65; }
+    .muted { color: var(--muted); }
+    .warning { color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 16px; padding: 14px 16px; }
+
+    .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 16px;
+      font-weight: 650;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+    }
+    button:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    button.secondary { background: #e2e8f0; color: #0f172a; }
+    button.secondary:hover { background: #cbd5e1; }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid #bfdbfe; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .pill-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 6px; }
+    .pill { border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 8px 12px; font-size: 14px; font-weight: 650; }
+
+    .cue-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+    .cue-card { min-height: 150px; border-radius: 20px; border: 1px solid var(--line); background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; }
+    .cue-label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .cue-value { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+    .cue-symbol { width: 64px; height: 64px; margin-top: 10px; display: grid; place-items: center; font-size: 38px; font-weight: 900; border-radius: 16px; background: white; border: 1px solid var(--line); }
+    .empty-cue { opacity: 0.38; border-style: dashed; }
+
+    .slider-box { background: #f8fafc; border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-top: 18px; }
+    .slider-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; margin-top: 8px; gap: 12px; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .slider-value { text-align: center; font-size: 34px; font-weight: 800; margin: 12px 0 4px; }
+
+    .choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+    .choice-button { min-height: 96px; font-size: 22px; border-radius: 18px; }
+
+    .feedback { border-radius: 18px; padding: 20px; margin-top: 20px; background: #f8fafc; border: 1px solid var(--line); }
+    .feedback.correct { border-color: #bbf7d0; background: #f0fdf4; }
+    .feedback.wrong { border-color: #fecaca; background: #fef2f2; }
+
+    .small-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+    .metric { border-radius: 16px; padding: 14px; background: #f8fafc; border: 1px solid var(--line); }
+    .metric strong { display: block; font-size: 21px; margin-top: 4px; }
+
+    .question-box { background: #f8fafc; border: 1px solid var(--line); border-radius: 18px; padding: 18px; margin: 16px 0; }
+    label.option { display: block; padding: 10px 0; font-size: 16px; }
+    input[type="radio"] { margin-right: 8px; }
+
+    textarea { width: 100%; min-height: 120px; border: 1px solid var(--line); border-radius: 16px; padding: 14px; font: inherit; resize: vertical; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 720px) {
+      body { padding: 16px 10px; }
+      .card { padding: 22px; }
+      .cue-grid, .choice-grid, .small-grid { grid-template-columns: 1fr; }
+      .slider-labels { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main><div id="app"></div></main>
+
+  <script>
+    /**********************************************************************
+     * BELIEF UPDATING EXPERIMENT - OVERALL HTML VERSION
+     * Version: 0.2.0-fixed-generative
+     *
+     * Key fixes relative to prototype:
+     * 1. true_state is sampled first from prior P(A).
+     * 2. cues are then sampled conditionally on true_state.
+     * 3. feedback does NOT show normative posterior or architecture label.
+     * 4. Stage 2 slider can be submitted unchanged.
+     * 5. cue order is counterbalanced between participants.
+     * 6. architecture labels use redundancy/synergy-dominant terminology.
+     * 7. data are downloadable as JSON; replace saveData() for server/Firebase.
+     **********************************************************************/
+
+    const CONFIG = {
+      studyId: "belief_architecture_v2",
+      experimentVersion: "0.2.0-fixed-generative",
+      schemaVersion: "1.0.0",
+      studyPhase: "pilot_ready_local_json",
+
+      // Core task parameters
+      priorProbabilityA: 0.70,
+      trialsPerArchitecture: 48, // pilot: 24-48; main study can use 60-96 if feasible
+      confidenceEveryNTrials: 12,
+      priorReportEveryNTrials: 16,
+      sliderStart: 50,
+
+      // Architecture-specific generative parameters
+      redundancyCueReliability: 0.75,
+      synergyJointReliability: 0.80,
+
+      architectures: ["redundancy_dominant", "synergy_dominant"],
+      labels: {
+        redundancy_dominant: "Blok",
+        synergy_dominant: "Blok"
+      },
+
+      // Use false during debugging only if you want to inspect normative values in console.
+      debugShowNormativeInFeedback: false,
+      allowRestart: false,
+      simulationN: 100000
+    };
+
+    const app = document.getElementById("app");
+
+    const COPY = {
+      tr: {
+        htmlLang: "tr",
+        locale: "tr-TR",
+        title: "Bilgi Mimarisi ve İnanç Güncelleme Deneyi",
+        language: {
+          title: "Dil seçimi",
+          current: "Dil: Türkçe",
+          tr: "Türkçe",
+          en: "English"
+        },
+        topbar: {
+          version: "Çalışma sürümü",
+          participant: "Katılımcı"
+        },
+        terms: {
+          system: "Sistem",
+          systemA: "Sistem A",
+          systemB: "Sistem B",
+          block: "Blok",
+          trial: "Deneme",
+          yes: "Evet",
+          no: "Hayır",
+          unsure: "Emin değilim",
+          otherUnsure: "Emin değilim / diğer"
+        },
+        cueValues: {
+          "Mavi": "Mavi",
+          "Turuncu": "Turuncu",
+          "Üçgen": "Üçgen",
+          "Daire": "Daire"
+        },
+        cue: {
+          colorSensor: "Renk sensörü",
+          shapeSensor: "Şekil sensörü",
+          waiting: "Bekleniyor",
+          sensor1: "Sensör 1",
+          sensor2: "Sensör 2"
+        },
+        consent: {
+          debugButton: "Araştırmacı simülasyon kontrolü",
+          p1: "Bu çalışmada iki gizli sistemden hangisinin aktif olduğunu tahmin edeceksin. Her denemede iki sensör sinyali sırayla gösterilecek. Her sinyalden sonra Sistem A'nın aktif olma olasılığını 0 ile 100 arasında tahmin edeceksin.",
+          p2: "Katılım gönüllüdür. İstediğin zaman çalışmadan ayrılabilirsin. Yanıtların anonim bir katılımcı koduyla kaydedilecektir.",
+          warningLabel: "Not:",
+          warning: "Bu HTML yerel JSON kayıtlı pilot sürümdür. Gerçek veri toplamada otomatik sunucu/Firebase kaydı eklenmelidir.",
+          pill1: "İki aşamalı posterior ölçümü",
+          pill2: "Redundancy-dominant vs synergy-dominant",
+          pill3: "Correct generative model",
+          button: "Onaylıyorum ve başla"
+        },
+        simulation: {
+          tableControl: "Kontrol",
+          tableExpected: "Beklenen",
+          tableObserved: "Simülasyon",
+          runningTitle: "Simülasyon kontrolü çalışıyor",
+          runningText: "{n} sahte trial üretiliyor. Bu işlem birkaç saniye sürebilir.",
+          completedTitle: "Simülasyon kontrolü tamamlandı",
+          completedText: "Bu kontrol, HTML'in ürettiği trial'ların teorik bilgi mimarisiyle uyumlu olup olmadığını test eder.",
+          completedMeta: "N = {n} trial / architecture. Küçük sapmalar rastgele örneklemeden kaynaklanır.",
+          downloadButton: "Simülasyon özetini JSON indir",
+          backButton: "Ana ekrana dön",
+          redTitle: "Redundancy-dominant kontrol",
+          synTitle: "Synergy-dominant kontrol"
+        },
+        instructions: {
+          explicitPrior: "Bu oturumda Sistem A genel olarak daha sık aktiftir: yaklaşık {a} Sistem A, {b} Sistem B.",
+          implicitPrior: "Bu oturumda Sistem A ve Sistem B'nin ne kadar sık aktif olduğunu sana açıkça söylemeyeceğiz. Geri bildirimlerden öğrenmeye çalış.",
+          title: "Görev Talimatı",
+          intro: "Her denemede gizli sistem ya <strong>Sistem A</strong> ya da <strong>Sistem B</strong> olacak. Bunu doğrudan göremeyeceksin; iki sensörden gelen iki ipucunu sırayla göreceksin.",
+          steps: [
+            "İlk sensör sinyalini gör.",
+            "Sistem A olasılığını 0-100 arasında tahmin et.",
+            "İkinci sensör sinyalini gör.",
+            "Olasılığını yeniden güncelle.",
+            "Son kararını ver ve geri bildirim al."
+          ],
+          blockInfo: "İki blok vardır. Bloklar arasında sensörlerin çalışma biçimi değişebilir. Bazı bloklarda her bir sensör tek başına bilgi verebilir; bazı bloklarda ise iki sensörün birlikte oluşturduğu örüntü daha önemli olabilir.",
+          muted: "Lütfen olasılık tahminlerini dikkatli ver. Değerini değiştirmeden aynı tahmini onaylayabilirsin.",
+          continueButton: "Devam et"
+        },
+        comprehension: {
+          title: "Kısa Anlama Kontrolü",
+          retry: "Bazı cevaplar hatalıydı. Lütfen talimatları dikkatlice okuyup tekrar dene.",
+          q1: "1. Her denemede senden ne isteniyor?",
+          q1Posterior: "Sensörlerden sonra Sistem A olasılığını tahmin etmek",
+          q1Memory: "Önceki ekrandaki sembolleri ezberlemek",
+          q1Random: "Rastgele bir sistem seçmek",
+          q2: "2. İkinci sensörden sonra ne yapmalısın?",
+          q2Ignore: "İlk sensörü unutmalıyım",
+          q2Combine: "İki sensörü birlikte düşünerek olasılığımı güncellemeliyim",
+          q2Always50: "Her zaman %50 demeliyim",
+          q3: "3. Bloklar arasında sensörlerin çalışma biçimi değişebilir mi?",
+          button: "Cevapları kontrol et"
+        },
+        blockIntro: {
+          title: "Blok {number} başlıyor",
+          p1: "Bu blokta sensörlerin nasıl çalıştığını geri bildirimlerden öğrenmeye çalış. Her denemede iki sensör sinyali sırayla gösterilecek.",
+          p2: "Blok içinde aynı kural geçerlidir. Bir sonraki blokta kural değişebilir.",
+          button: "Bloğa başla"
+        },
+        slider: {
+          low: "0% = kesin B",
+          mid: "50% = eşit",
+          high: "100% = kesin A",
+          submit: "Bu olasılık tahminini kaydet"
+        },
+        trial: {
+          priorExplicit: "Blok {block} · Genel oran bilgisi: Sistem A yaklaşık {a}",
+          priorImplicit: "Blok {block} · Genel oran bilgisi açıkça verilmedi",
+          stage1Question: "İlk ipucundan sonra Sistem A'nın aktif olma olasılığı sence kaçtır?",
+          stage2Hint: "Şimdi iki sensörü birlikte düşün.",
+          stage2Question: "İki ipucundan sonra Sistem A'nın aktif olma olasılığı sence kaçtır?"
+        },
+        choice: {
+          title: "Son karar",
+          question: "Bu denemede hangi sistemin aktif olduğunu düşünüyorsun?"
+        },
+        confidence: {
+          title: "Güven derecesi",
+          question: "Son kararından ne kadar eminsin?",
+          low: "0 = hiç emin değilim",
+          high: "100 = tamamen eminim",
+          button: "Güvenimi kaydet"
+        },
+        feedback: {
+          title: "Geri bildirim",
+          correct: "Doğru",
+          wrong: "Yanlış",
+          trueSystem: "Doğru sistem:",
+          yourChoice: "Senin kararın:",
+          continueButton: "Devam et",
+          normativeStage1: "Normatif Stage 1",
+          normativeStage2: "Normatif Stage 2",
+          architecture: "Architecture"
+        },
+        priorReport: {
+          title: "Genel oran tahmini",
+          question: "Şu ana kadarki deneyimine göre, bu oturumda Sistem A ne kadar sık aktif oluyor?",
+          low: "0% = hiç A yok",
+          high: "100% = hep A",
+          button: "Tahminimi kaydet"
+        },
+        break: {
+          title: "Kısa ara",
+          p1: "İlk bloğu tamamladın. Bir sonraki blokta sensörlerin çalışma biçimi değişebilir.",
+          p2: "Hazır olduğunda devam et.",
+          button: "Sonraki bloğa geç"
+        },
+        postTask: {
+          title: "Son sorular",
+          intro: "Lütfen görev boyunca nasıl karar verdiğini en iyi anlatan seçenekleri işaretle.",
+          strategyQuestion: "Karar stratejine en yakın seçenek hangisi?",
+          strategySingleColor: "Daha çok renk sensörünü kullandım",
+          strategySingleShape: "Daha çok şekil sensörünü kullandım",
+          strategyBoth: "İki sensörü ayrı ayrı değerlendirdim",
+          strategyRelation: "İki sensörün aynı/farklı destek vermesine baktım",
+          strategyBaseRate: "Daha çok genel A/B oranına baktım",
+          strategyFeedback: "Geri bildirimlerden öğrendiğim kurala göre gittim",
+          strategyGuessing: "Çoğunlukla tahmin ettim",
+          ruleChangeQuestion: "Sence bloklar arasında sensörlerin kuralı değişti mi?",
+          baseRateQuestion: "Sence Sistem A genel olarak Sistem B'den daha sık mıydı?",
+          baseRateAMore: "Evet, A daha sıktı",
+          baseRateBMore: "Hayır, B daha sıktı",
+          baseRateEqual: "Yaklaşık eşitti",
+          colorUseQuestion: "Kararında renk bilgisini kullandın mı?",
+          shapeUseQuestion: "Kararında şekil bilgisini kullandın mı?",
+          relationUseQuestion: "İki sensör arasındaki ilişkiyi kullandın mı?",
+          understandingQuestion: "Görevi ne kadar iyi anladığını düşünüyorsun?",
+          attentionQuestion: "Görev boyunca dikkatini ne kadar iyi verebildin?",
+          scale: "1 = hiç, 7 = tamamen",
+          error: "Lütfen tüm seçenekleri işaretle.",
+          finishButton: "Deneyi bitir"
+        },
+        end: {
+          title: "Teşekkürler",
+          text: "Deneyi tamamladın. Bu sürümde veri otomatik olarak sunucuya gönderilmez; JSON çıktısını indirmen gerekir.",
+          trials: "Trial sayısı",
+          accuracy: "Doğruluk",
+          posterior: "Posterior yanıtı",
+          download: "JSON verisini indir",
+          restart: "Yeniden başlat"
+        }
+      },
+      en: {
+        htmlLang: "en",
+        locale: "en-US",
+        title: "Information Architecture and Belief Updating Experiment",
+        language: {
+          title: "Language",
+          current: "Language: English",
+          tr: "Türkçe",
+          en: "English"
+        },
+        topbar: {
+          version: "Study version",
+          participant: "Participant"
+        },
+        terms: {
+          system: "System",
+          systemA: "System A",
+          systemB: "System B",
+          block: "Block",
+          trial: "Trial",
+          yes: "Yes",
+          no: "No",
+          unsure: "Not sure",
+          otherUnsure: "Not sure / other"
+        },
+        cueValues: {
+          "Mavi": "Blue",
+          "Turuncu": "Orange",
+          "Üçgen": "Triangle",
+          "Daire": "Circle"
+        },
+        cue: {
+          colorSensor: "Color sensor",
+          shapeSensor: "Shape sensor",
+          waiting: "Waiting",
+          sensor1: "Sensor 1",
+          sensor2: "Sensor 2"
+        },
+        consent: {
+          debugButton: "Researcher simulation check",
+          p1: "In this study, you will estimate which of two hidden systems is active. In each trial, two sensor signals will be shown one after the other. After each signal, you will estimate the probability that System A is active on a scale from 0 to 100.",
+          p2: "Participation is voluntary. You may leave the study at any time. Your responses will be stored with an anonymous participant code.",
+          warningLabel: "Note:",
+          warning: "This HTML is a local JSON pilot version. Automatic server/Firebase saving should be added for real data collection.",
+          pill1: "Two-stage posterior measurement",
+          pill2: "Redundancy-dominant vs synergy-dominant",
+          pill3: "Correct generative model",
+          button: "I consent and start"
+        },
+        simulation: {
+          tableControl: "Check",
+          tableExpected: "Expected",
+          tableObserved: "Simulation",
+          runningTitle: "Simulation check running",
+          runningText: "{n} simulated trials are being generated. This may take a few seconds.",
+          completedTitle: "Simulation check complete",
+          completedText: "This check tests whether the trials generated by the HTML match the theoretical information architecture.",
+          completedMeta: "N = {n} trials / architecture. Small deviations are due to random sampling.",
+          downloadButton: "Download simulation summary as JSON",
+          backButton: "Back to main screen",
+          redTitle: "Redundancy-dominant check",
+          synTitle: "Synergy-dominant check"
+        },
+        instructions: {
+          explicitPrior: "In this session, System A is generally active more often: about {a} System A and {b} System B.",
+          implicitPrior: "In this session, you will not be explicitly told how often System A and System B are active. Try to learn from feedback.",
+          title: "Task Instructions",
+          intro: "In each trial, the hidden system will be either <strong>System A</strong> or <strong>System B</strong>. You cannot see it directly; instead, you will see two cues from two sensors, one after the other.",
+          steps: [
+            "See the first sensor signal.",
+            "Estimate the probability of System A from 0 to 100.",
+            "See the second sensor signal.",
+            "Update your probability estimate.",
+            "Make your final choice and receive feedback."
+          ],
+          blockInfo: "There are two blocks. The way the sensors work may change between blocks. In some blocks, each sensor may be informative on its own; in other blocks, the pattern formed by the two sensors together may matter more.",
+          muted: "Please give your probability estimates carefully. You can confirm the same estimate without changing its value.",
+          continueButton: "Continue"
+        },
+        comprehension: {
+          title: "Short Comprehension Check",
+          retry: "Some answers were incorrect. Please read the instructions carefully and try again.",
+          q1: "1. What are you asked to do in each trial?",
+          q1Posterior: "Estimate the probability of System A after the sensors",
+          q1Memory: "Memorize the symbols from the previous screen",
+          q1Random: "Choose a system at random",
+          q2: "2. What should you do after the second sensor?",
+          q2Ignore: "Ignore the first sensor",
+          q2Combine: "Consider both sensors together and update my probability",
+          q2Always50: "Always say 50%",
+          q3: "3. Can the way the sensors work change between blocks?",
+          button: "Check answers"
+        },
+        blockIntro: {
+          title: "Block {number} begins",
+          p1: "In this block, try to learn how the sensors work from the feedback. In each trial, two sensor signals will be shown one after the other.",
+          p2: "The same rule applies within a block. The rule may change in the next block.",
+          button: "Start block"
+        },
+        slider: {
+          low: "0% = certainly B",
+          mid: "50% = equal",
+          high: "100% = certainly A",
+          submit: "Save this probability estimate"
+        },
+        trial: {
+          priorExplicit: "Block {block} · Base-rate information: System A about {a}",
+          priorImplicit: "Block {block} · Base-rate information was not explicitly given",
+          stage1Question: "After the first cue, what do you think is the probability that System A is active?",
+          stage2Hint: "Now consider both sensors together.",
+          stage2Question: "After the two cues, what do you think is the probability that System A is active?"
+        },
+        choice: {
+          title: "Final choice",
+          question: "Which system do you think was active in this trial?"
+        },
+        confidence: {
+          title: "Confidence",
+          question: "How confident are you in your final choice?",
+          low: "0 = not confident at all",
+          high: "100 = completely confident",
+          button: "Save confidence"
+        },
+        feedback: {
+          title: "Feedback",
+          correct: "Correct",
+          wrong: "Incorrect",
+          trueSystem: "Correct system:",
+          yourChoice: "Your choice:",
+          continueButton: "Continue",
+          normativeStage1: "Normative Stage 1",
+          normativeStage2: "Normative Stage 2",
+          architecture: "Architecture"
+        },
+        priorReport: {
+          title: "Base-rate estimate",
+          question: "Based on your experience so far, how often is System A active in this session?",
+          low: "0% = no A",
+          high: "100% = always A",
+          button: "Save estimate"
+        },
+        break: {
+          title: "Short break",
+          p1: "You completed the first block. In the next block, the way the sensors work may change.",
+          p2: "Continue when you are ready.",
+          button: "Go to next block"
+        },
+        postTask: {
+          title: "Final questions",
+          intro: "Please select the options that best describe how you made decisions during the task.",
+          strategyQuestion: "Which option is closest to your decision strategy?",
+          strategySingleColor: "I mostly used the color sensor",
+          strategySingleShape: "I mostly used the shape sensor",
+          strategyBoth: "I evaluated the two sensors separately",
+          strategyRelation: "I looked at whether the two sensors supported the same or different systems",
+          strategyBaseRate: "I mostly used the overall A/B base rate",
+          strategyFeedback: "I followed the rule I learned from feedback",
+          strategyGuessing: "I mostly guessed",
+          ruleChangeQuestion: "Do you think the sensor rule changed between blocks?",
+          baseRateQuestion: "Do you think System A was generally more frequent than System B?",
+          baseRateAMore: "Yes, A was more frequent",
+          baseRateBMore: "No, B was more frequent",
+          baseRateEqual: "They were about equal",
+          colorUseQuestion: "Did you use color information in your decisions?",
+          shapeUseQuestion: "Did you use shape information in your decisions?",
+          relationUseQuestion: "Did you use the relation between the two sensors?",
+          understandingQuestion: "How well do you think you understood the task?",
+          attentionQuestion: "How well were you able to pay attention during the task?",
+          scale: "1 = not at all, 7 = completely",
+          error: "Please select all required options.",
+          finishButton: "Finish experiment"
+        },
+        end: {
+          title: "Thank you",
+          text: "You completed the experiment. In this version, data is not sent to a server automatically; you need to download the JSON output.",
+          trials: "Trials",
+          accuracy: "Accuracy",
+          posterior: "Posterior responses",
+          download: "Download JSON data",
+          restart: "Restart"
+        }
+      }
+    };
+
+    function isSupportedLanguage(lang) {
+      return lang === "tr" || lang === "en";
+    }
+
+    function getInitialLanguage() {
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get("lang");
+      if (isSupportedLanguage(requested)) return requested;
+      try {
+        const saved = window.localStorage.getItem("experimentLanguage");
+        if (isSupportedLanguage(saved)) return saved;
+      } catch (error) {
+        // Local storage can be unavailable in some private browsing modes.
+      }
+      return "tr";
+    }
+
+    const state = {
+      participantId: crypto.randomUUID(),
+      sessionId: crypto.randomUUID(),
+      language: getInitialLanguage(),
+      consentGiven: false,
+      currentScreen: "consent",
+      architectureOrder: shuffle([...CONFIG.architectures]),
+      priorType: Math.random() < 0.5 ? "explicit" : "implicit",
+      cueOrder: Math.random() < 0.5 ? ["color", "shape"] : ["shape", "color"],
+      colorMapping: Math.random() < 0.5 ? { aSupport: "Mavi", bSupport: "Turuncu" } : { aSupport: "Turuncu", bSupport: "Mavi" },
+      shapeMapping: Math.random() < 0.5 ? { aSupport: "Üçgen", bSupport: "Daire" } : { aSupport: "Daire", bSupport: "Üçgen" },
+      currentBlockIndex: 0,
+      currentTrialIndex: 0,
+      currentStage: null,
+      trialList: [],
+      currentSliderValue: CONFIG.sliderStart,
+      stage1Response: null,
+      stage1RtStart: null,
+      stage2RtStart: null,
+      choiceRtStart: null,
+      rawEvents: [],
+      trials: [],
+      stageResponses: [],
+      finalChoices: [],
+      confidenceResponses: [],
+      priorReports: [],
+      comprehensionResponses: [],
+      postTaskResponses: [],
+      qualityEvents: [],
+      startedAt: Date.now(),
+      blockStartedAt: null
+    };
+
+    function interpolate(template, values = {}) {
+      return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
+    }
+
+    function t(path, values = {}) {
+      const lookup = path.split(".");
+      let value = COPY[state.language];
+      for (const key of lookup) value = value?.[key];
+      if (value === undefined) {
+        value = COPY.tr;
+        for (const key of lookup) value = value?.[key];
+      }
+      if (typeof value !== "string") return value;
+      return interpolate(value, values);
+    }
+
+    function currentLocale() {
+      return COPY[state.language].locale;
+    }
+
+    function updateDocumentLanguage() {
+      document.documentElement.lang = t("htmlLang");
+      document.title = t("title");
+    }
+
+    function setLanguage(language) {
+      if (!isSupportedLanguage(language)) return;
+      state.language = language;
+      try {
+        window.localStorage.setItem("experimentLanguage", language);
+      } catch (error) {
+        // Language selection still works without persistence.
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", language);
+      window.history.replaceState(null, "", url);
+      updateDocumentLanguage();
+      showConsent();
+    }
+
+    function languageSelectorHtml() {
+      return `
+        <div class="language-switch" aria-label="${t("language.title")}">
+          <button type="button" class="language-option ${state.language === "tr" ? "active" : ""}" data-language="tr" aria-pressed="${state.language === "tr"}">${t("language.tr")}</button>
+          <button type="button" class="language-option ${state.language === "en" ? "active" : ""}" data-language="en" aria-pressed="${state.language === "en"}">${t("language.en")}</button>
+        </div>
+      `;
+    }
+
+    function bindLanguageSelector() {
+      document.querySelectorAll("[data-language]").forEach(button => {
+        button.onclick = () => setLanguage(button.dataset.language);
+      });
+    }
+
+    function displayCueValue(value) {
+      return value ? (t(`cueValues.${value}`) || value) : t("cue.waiting");
+    }
+
+    function displaySystem(system) {
+      return `${t("terms.system")} ${system}`;
+    }
+
+    updateDocumentLanguage();
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function logEvent(eventType, payload = {}) {
+      state.rawEvents.push({
+        event_id: crypto.randomUUID(),
+        participant_id: state.participantId,
+        session_id: state.sessionId,
+        event_type: eventType,
+        event_index: state.rawEvents.length + 1,
+        client_timestamp: new Date().toISOString(),
+        client_elapsed_ms: Date.now() - state.startedAt,
+        block_index: state.currentBlockIndex + 1,
+        trial_index: state.currentTrialIndex + 1,
+        payload,
+        experiment_version: CONFIG.experimentVersion
+      });
+    }
+
+    function recordQualityEvent(eventType) {
+      const row = {
+        quality_event_id: crypto.randomUUID(),
+        participant_id: state.participantId,
+        session_id: state.sessionId,
+        event_type: eventType,
+        event_started_at_client: new Date().toISOString(),
+        client_elapsed_ms: Date.now() - state.startedAt
+      };
+      state.qualityEvents.push(row);
+      logEvent(eventType);
+      return row;
+    }
+
+    function clamp01(p) {
+      const eps = 1e-6;
+      return Math.min(1 - eps, Math.max(eps, p));
+    }
+
+    function logit(p) {
+      const x = clamp01(p);
+      return Math.log(x / (1 - x));
+    }
+
+    function invLogit(x) { return 1 / (1 + Math.exp(-x)); }
+
+    function llr(pGivenA, pGivenB) {
+      return Math.log(clamp01(pGivenA) / clamp01(pGivenB));
+    }
+
+    function percent(x) { return `${Math.round(x * 100)}%`; }
+
+    function currentTrial() { return state.trialList[state.currentTrialIndex]; }
+
+    function progress() {
+      const total = state.trialList.length || 1;
+      return Math.min(100, Math.round((state.currentTrialIndex / total) * 100));
+    }
+
+    function renderShell(content) {
+      app.innerHTML = `
+        <section class="card">
+          <div class="topbar">
+            <span>${t("topbar.version")}: ${CONFIG.experimentVersion}</span>
+            <span>${t("topbar.participant")}: ${state.participantId.slice(0, 8)}</span>
+            <span>${t("language.current")}</span>
+          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${progress()}%"></div></div>
+          ${content}
+        </section>
+      `;
+    }
+
+    /**********************************************************************
+     * CORRECT GENERATIVE MODEL
+     **********************************************************************/
+
+    function generateTrials() {
+      const trials = [];
+      let globalIndex = 1;
+
+      state.architectureOrder.forEach((architecture, blockIdx) => {
+        for (let idx = 0; idx < CONFIG.trialsPerArchitecture; idx++) {
+          trials.push(buildTrial({
+            architecture,
+            blockIndex: blockIdx + 1,
+            trialIndexBlock: idx + 1,
+            trialIndexGlobal: globalIndex++
+          }));
+        }
+      });
+
+      state.trialList = trials;
+    }
+
+    function buildTrial({ architecture, blockIndex, trialIndexBlock, trialIndexGlobal }) {
+      const priorA = CONFIG.priorProbabilityA;
+      const trueState = Math.random() < priorA ? "A" : "B";
+
+      let colorValue;
+      let shapeValue;
+      let cue1Value;
+      let cue2Value;
+      let cue1Dimension = state.cueOrder[0];
+      let cue2Dimension = state.cueOrder[1];
+
+      let pCue1GivenA;
+      let pCue1GivenB;
+      let pJointGivenA;
+      let pJointGivenB;
+      let cuePattern;
+      let architectureDetail;
+
+      if (architecture === "redundancy_dominant") {
+        const r = CONFIG.redundancyCueReliability;
+
+        // Each cue is separately diagnostic and conditionally independent given true_state.
+        const colorSupportsA = trueState === "A" ? Math.random() < r : Math.random() < (1 - r);
+        const shapeSupportsA = trueState === "A" ? Math.random() < r : Math.random() < (1 - r);
+
+        colorValue = colorSupportsA ? state.colorMapping.aSupport : state.colorMapping.bSupport;
+        shapeValue = shapeSupportsA ? state.shapeMapping.aSupport : state.shapeMapping.bSupport;
+
+        const cue1SupportsA = cue1Dimension === "color" ? colorSupportsA : shapeSupportsA;
+        const cue2SupportsA = cue2Dimension === "color" ? colorSupportsA : shapeSupportsA;
+
+        pCue1GivenA = cue1SupportsA ? r : (1 - r);
+        pCue1GivenB = cue1SupportsA ? (1 - r) : r;
+        const pCue2GivenA = cue2SupportsA ? r : (1 - r);
+        const pCue2GivenB = cue2SupportsA ? (1 - r) : r;
+
+        pJointGivenA = pCue1GivenA * pCue2GivenA;
+        pJointGivenB = pCue1GivenB * pCue2GivenB;
+
+        cuePattern = `${cue1SupportsA ? "A" : "B"}_${cue2SupportsA ? "A" : "B"}`;
+        architectureDetail = "both_cues_separately_diagnostic_conditionally_independent";
+      }
+
+      if (architecture === "synergy_dominant") {
+        const q = CONFIG.synergyJointReliability;
+
+        // Individual color/shape values are marginally uninformative.
+        // The relation between them is informative: same supports A, different supports B.
+        const relationSupportsA = trueState === "A" ? Math.random() < q : Math.random() < (1 - q);
+
+        // Randomly choose one of two same or two different concrete patterns.
+        if (relationSupportsA) {
+          const sameAConcrete = Math.random() < 0.5;
+          colorValue = sameAConcrete ? state.colorMapping.aSupport : state.colorMapping.bSupport;
+          shapeValue = sameAConcrete ? state.shapeMapping.aSupport : state.shapeMapping.bSupport;
+        } else {
+          const diffConcrete = Math.random() < 0.5;
+          colorValue = diffConcrete ? state.colorMapping.aSupport : state.colorMapping.bSupport;
+          shapeValue = diffConcrete ? state.shapeMapping.bSupport : state.shapeMapping.aSupport;
+        }
+
+        // The first cue alone is uninformative by construction.
+        pCue1GivenA = 0.50;
+        pCue1GivenB = 0.50;
+        pJointGivenA = relationSupportsA ? q : (1 - q);
+        pJointGivenB = relationSupportsA ? (1 - q) : q;
+
+        cuePattern = relationSupportsA ? "same_supports_A" : "different_supports_B";
+        architectureDetail = "individual_cues_uninformative_joint_relation_diagnostic";
+      }
+
+      cue1Value = cue1Dimension === "color" ? colorValue : shapeValue;
+      cue2Value = cue2Dimension === "color" ? colorValue : shapeValue;
+
+      const priorLogOdds = logit(priorA);
+      const cue1Llr = llr(pCue1GivenA, pCue1GivenB);
+      const jointLlr = llr(pJointGivenA, pJointGivenB);
+      const cue2IncrementalLlr = jointLlr - cue1Llr;
+      const stage1Logit = priorLogOdds + cue1Llr;
+      const stage2Logit = priorLogOdds + jointLlr;
+
+      return {
+        trial_id: crypto.randomUUID(),
+        participant_id: state.participantId,
+        session_id: state.sessionId,
+        block_id: `block_${blockIndex}`,
+        block_index: blockIndex,
+        trial_index_global: trialIndexGlobal,
+        trial_index_block: trialIndexBlock,
+        trial_type: "main",
+        architecture,
+        architecture_detail: architectureDetail,
+        prior_type: state.priorType,
+        true_state: trueState,
+        prior_probability_A: priorA,
+        prior_log_odds_A: priorLogOdds,
+        cue_order: state.cueOrder.join("__"),
+        cue1_dimension: cue1Dimension,
+        cue1_value: cue1Value,
+        cue2_dimension: cue2Dimension,
+        cue2_value: cue2Value,
+        color_value: colorValue,
+        shape_value: shapeValue,
+        cue_pattern: cuePattern,
+        likelihood_cue1_given_A: pCue1GivenA,
+        likelihood_cue1_given_B: pCue1GivenB,
+        likelihood_joint_given_A: pJointGivenA,
+        likelihood_joint_given_B: pJointGivenB,
+        cue1_llr: cue1Llr,
+        joint_llr: jointLlr,
+        cue2_incremental_llr: cue2IncrementalLlr,
+        normative_stage1_prob_A: invLogit(stage1Logit),
+        normative_stage2_prob_A: invLogit(stage2Logit),
+        normative_stage1_logit_A: stage1Logit,
+        normative_stage2_logit_A: stage2Logit,
+        normative_choice: invLogit(stage2Logit) >= 0.5 ? "A" : "B",
+        is_confidence_trial: trialIndexGlobal % CONFIG.confidenceEveryNTrials === 0,
+        is_prior_report_due_after: trialIndexGlobal % CONFIG.priorReportEveryNTrials === 0,
+        feedback_shown: true
+      };
+    }
+
+    /**********************************************************************
+     * UI SCREENS
+     **********************************************************************/
+
+    function isDebugMode() {
+      return window.location.search.includes("debug=1") || window.location.hash === "#debug";
+    }
+
+    function showConsent() {
+      const debugButton = isDebugMode()
+        ? `<button class="secondary" id="simBtn">${t("consent.debugButton")}</button>`
+        : "";
+
+      renderShell(`
+        <h1>${t("title")}</h1>
+        <div class="button-row" style="margin-top:0">${languageSelectorHtml()}</div>
+        <p>${t("consent.p1")}</p>
+        <p>${t("consent.p2")}</p>
+        <p class="warning"><strong>${t("consent.warningLabel")}</strong> ${t("consent.warning")}</p>
+        <div class="pill-row">
+          <span class="pill">${t("consent.pill1")}</span>
+          <span class="pill">${t("consent.pill2")}</span>
+          <span class="pill">${t("consent.pill3")}</span>
+        </div>
+        <div class="button-row">
+          <button id="consentBtn">${t("consent.button")}</button>
+          ${debugButton}
+        </div>
+      `);
+      bindLanguageSelector();
+
+      document.getElementById("consentBtn").onclick = () => {
+        state.consentGiven = true;
+        logEvent("consent_given", { consent_given: true, language: state.language });
+        generateTrials();
+        showInstructions();
+      };
+
+      if (isDebugMode()) {
+        document.getElementById("simBtn").onclick = () => showSimulationCheck();
+      }
+    }
+
+    /**********************************************************************
+     * SIMULATION VALIDATION MODE
+     * Open the file with ?debug=1 or #debug to see the simulation button.
+     **********************************************************************/
+
+    function cueSupportsA(dimension, value) {
+      if (dimension === "color") return value === state.colorMapping.aSupport;
+      if (dimension === "shape") return value === state.shapeMapping.aSupport;
+      return false;
+    }
+
+    function relationSupportsAFromTrial(trial) {
+      const colorSupportsA = cueSupportsA("color", trial.color_value);
+      const shapeSupportsA = cueSupportsA("shape", trial.shape_value);
+      return colorSupportsA === shapeSupportsA;
+    }
+
+    function mutualInformationFromRows(rows, xKeyFn, yKeyFn) {
+      const n = rows.length;
+      const joint = new Map();
+      const xCounts = new Map();
+      const yCounts = new Map();
+
+      for (const row of rows) {
+        const x = xKeyFn(row);
+        const y = yKeyFn(row);
+        const jk = `${x}||${y}`;
+        joint.set(jk, (joint.get(jk) || 0) + 1);
+        xCounts.set(x, (xCounts.get(x) || 0) + 1);
+        yCounts.set(y, (yCounts.get(y) || 0) + 1);
+      }
+
+      let mi = 0;
+      for (const [jk, count] of joint.entries()) {
+        const [x, y] = jk.split("||");
+        const pxy = count / n;
+        const px = xCounts.get(x) / n;
+        const py = yCounts.get(y) / n;
+        mi += pxy * Math.log2(pxy / (px * py));
+      }
+      return mi;
+    }
+
+    function mean(values) {
+      if (!values.length) return NaN;
+      return values.reduce((a, b) => a + b, 0) / values.length;
+    }
+
+    function prop(rows, predicate) {
+      if (!rows.length) return NaN;
+      return rows.filter(predicate).length / rows.length;
+    }
+
+    function fmt(x, digits = 3) {
+      if (Number.isNaN(x)) return "NA";
+      return Number(x).toFixed(digits);
+    }
+
+    function expectedPosteriorValues() {
+      const pA = CONFIG.priorProbabilityA;
+      const pB = 1 - pA;
+      const r = CONFIG.redundancyCueReliability;
+      const q = CONFIG.synergyJointReliability;
+
+      return {
+        red_stage1_A_support: (pA * r) / ((pA * r) + (pB * (1 - r))),
+        red_stage1_B_support: (pA * (1 - r)) / ((pA * (1 - r)) + (pB * r)),
+        red_stage2_AA: (pA * r * r) / ((pA * r * r) + (pB * (1 - r) * (1 - r))),
+        red_stage2_AB: (pA * r * (1 - r)) / ((pA * r * (1 - r)) + (pB * (1 - r) * r)),
+        red_stage2_BA: (pA * (1 - r) * r) / ((pA * (1 - r) * r) + (pB * r * (1 - r))),
+        red_stage2_BB: (pA * (1 - r) * (1 - r)) / ((pA * (1 - r) * (1 - r)) + (pB * r * r)),
+        syn_stage1_any: pA,
+        syn_stage2_same: (pA * q) / ((pA * q) + (pB * (1 - q))),
+        syn_stage2_diff: (pA * (1 - q)) / ((pA * (1 - q)) + (pB * q))
+      };
+    }
+
+    function simulateArchitecture(architecture, n) {
+      const rows = [];
+      for (let i = 0; i < n; i++) {
+        rows.push(buildTrial({
+          architecture,
+          blockIndex: architecture === "redundancy_dominant" ? 1 : 2,
+          trialIndexBlock: i + 1,
+          trialIndexGlobal: i + 1
+        }));
+      }
+      return rows;
+    }
+
+    function summarizeSimulationRows(rows, architecture) {
+      const pA = prop(rows, r => r.true_state === "A");
+      const c1SupportA = r => cueSupportsA(r.cue1_dimension, r.cue1_value);
+      const c2SupportA = r => cueSupportsA(r.cue2_dimension, r.cue2_value);
+      const relationA = r => relationSupportsAFromTrial(r);
+
+      const out = { architecture, n: rows.length, pA };
+
+      out.mi_c1 = mutualInformationFromRows(rows, r => c1SupportA(r) ? "A_support" : "B_support", r => r.true_state);
+      out.mi_c2 = mutualInformationFromRows(rows, r => c2SupportA(r) ? "A_support" : "B_support", r => r.true_state);
+      out.mi_joint = mutualInformationFromRows(rows, r => `${r.cue1_value}_${r.cue2_value}`, r => r.true_state);
+
+      out.mean_stage1 = mean(rows.map(r => r.normative_stage1_prob_A));
+      out.mean_stage2 = mean(rows.map(r => r.normative_stage2_prob_A));
+
+      if (architecture === "redundancy_dominant") {
+        const Arows = rows.filter(r => r.true_state === "A");
+        const Brows = rows.filter(r => r.true_state === "B");
+        out.p_c1_A_support_given_A = prop(Arows, c1SupportA);
+        out.p_c1_A_support_given_B = prop(Brows, c1SupportA);
+        out.p_c2_A_support_given_A = prop(Arows, c2SupportA);
+        out.p_c2_A_support_given_B = prop(Brows, c2SupportA);
+        out.stage1_A_support = mean(rows.filter(c1SupportA).map(r => r.normative_stage1_prob_A));
+        out.stage1_B_support = mean(rows.filter(r => !c1SupportA(r)).map(r => r.normative_stage1_prob_A));
+        out.stage2_AA = mean(rows.filter(r => c1SupportA(r) && c2SupportA(r)).map(r => r.normative_stage2_prob_A));
+        out.stage2_AB = mean(rows.filter(r => c1SupportA(r) && !c2SupportA(r)).map(r => r.normative_stage2_prob_A));
+        out.stage2_BA = mean(rows.filter(r => !c1SupportA(r) && c2SupportA(r)).map(r => r.normative_stage2_prob_A));
+        out.stage2_BB = mean(rows.filter(r => !c1SupportA(r) && !c2SupportA(r)).map(r => r.normative_stage2_prob_A));
+      }
+
+      if (architecture === "synergy_dominant") {
+        const Arows = rows.filter(r => r.true_state === "A");
+        const Brows = rows.filter(r => r.true_state === "B");
+        out.p_c1_A_support_given_A = prop(Arows, c1SupportA);
+        out.p_c1_A_support_given_B = prop(Brows, c1SupportA);
+        out.p_c2_A_support_given_A = prop(Arows, c2SupportA);
+        out.p_c2_A_support_given_B = prop(Brows, c2SupportA);
+        out.p_relation_A_support_given_A = prop(Arows, relationA);
+        out.p_relation_A_support_given_B = prop(Brows, relationA);
+        out.stage1_any = mean(rows.map(r => r.normative_stage1_prob_A));
+        out.stage2_same = mean(rows.filter(relationA).map(r => r.normative_stage2_prob_A));
+        out.stage2_diff = mean(rows.filter(r => !relationA(r)).map(r => r.normative_stage2_prob_A));
+      }
+
+      return out;
+    }
+
+    function buildSimulationTable(title, rows) {
+      return `
+        <h3>${title}</h3>
+        <div style="overflow-x:auto">
+          <table style="width:100%; border-collapse:collapse; font-size:14px">
+            <thead>
+              <tr>
+                <th style="text-align:left; border-bottom:1px solid var(--line); padding:8px">${t("simulation.tableControl")}</th>
+                <th style="text-align:right; border-bottom:1px solid var(--line); padding:8px">${t("simulation.tableExpected")}</th>
+                <th style="text-align:right; border-bottom:1px solid var(--line); padding:8px">${t("simulation.tableObserved")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `
+                <tr>
+                  <td style="border-bottom:1px solid var(--line); padding:8px">${r.label}</td>
+                  <td style="text-align:right; border-bottom:1px solid var(--line); padding:8px">${r.expected}</td>
+                  <td style="text-align:right; border-bottom:1px solid var(--line); padding:8px"><strong>${r.observed}</strong></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function showSimulationCheck() {
+      renderShell(`
+        <h2>${t("simulation.runningTitle")}</h2>
+        <p>${t("simulation.runningText", { n: CONFIG.simulationN.toLocaleString(currentLocale()) })}</p>
+      `);
+
+      setTimeout(() => {
+        const n = CONFIG.simulationN;
+        const redRows = simulateArchitecture("redundancy_dominant", n);
+        const synRows = simulateArchitecture("synergy_dominant", n);
+        const red = summarizeSimulationRows(redRows, "redundancy_dominant");
+        const syn = summarizeSimulationRows(synRows, "synergy_dominant");
+        const exp = expectedPosteriorValues();
+
+        const redTable = buildSimulationTable(t("simulation.redTitle"), [
+          { label: "P(A)", expected: "0.700", observed: fmt(red.pA) },
+          { label: "P(C1 A-support | A)", expected: "0.750", observed: fmt(red.p_c1_A_support_given_A) },
+          { label: "P(C1 A-support | B)", expected: "0.250", observed: fmt(red.p_c1_A_support_given_B) },
+          { label: "P(C2 A-support | A)", expected: "0.750", observed: fmt(red.p_c2_A_support_given_A) },
+          { label: "P(C2 A-support | B)", expected: "0.250", observed: fmt(red.p_c2_A_support_given_B) },
+          { label: "I(Y; C1) bits", expected: "> 0", observed: fmt(red.mi_c1) },
+          { label: "I(Y; C2) bits", expected: "> 0", observed: fmt(red.mi_c2) },
+          { label: "I(Y; C1,C2) bits", expected: "> 0", observed: fmt(red.mi_joint) },
+          { label: "Stage 1: A-support posterior", expected: fmt(exp.red_stage1_A_support), observed: fmt(red.stage1_A_support) },
+          { label: "Stage 1: B-support posterior", expected: fmt(exp.red_stage1_B_support), observed: fmt(red.stage1_B_support) },
+          { label: "Stage 2: A+A posterior", expected: fmt(exp.red_stage2_AA), observed: fmt(red.stage2_AA) },
+          { label: "Stage 2: A+B posterior", expected: fmt(exp.red_stage2_AB), observed: fmt(red.stage2_AB) },
+          { label: "Stage 2: B+A posterior", expected: fmt(exp.red_stage2_BA), observed: fmt(red.stage2_BA) },
+          { label: "Stage 2: B+B posterior", expected: fmt(exp.red_stage2_BB), observed: fmt(red.stage2_BB) }
+        ]);
+
+        const synTable = buildSimulationTable(t("simulation.synTitle"), [
+          { label: "P(A)", expected: "0.700", observed: fmt(syn.pA) },
+          { label: "P(C1 A-support | A)", expected: "0.500", observed: fmt(syn.p_c1_A_support_given_A) },
+          { label: "P(C1 A-support | B)", expected: "0.500", observed: fmt(syn.p_c1_A_support_given_B) },
+          { label: "P(C2 A-support | A)", expected: "0.500", observed: fmt(syn.p_c2_A_support_given_A) },
+          { label: "P(C2 A-support | B)", expected: "0.500", observed: fmt(syn.p_c2_A_support_given_B) },
+          { label: "P(same/A-support relation | A)", expected: "0.800", observed: fmt(syn.p_relation_A_support_given_A) },
+          { label: "P(same/A-support relation | B)", expected: "0.200", observed: fmt(syn.p_relation_A_support_given_B) },
+          { label: "I(Y; C1) bits", expected: "≈ 0", observed: fmt(syn.mi_c1) },
+          { label: "I(Y; C2) bits", expected: "≈ 0", observed: fmt(syn.mi_c2) },
+          { label: "I(Y; C1,C2) bits", expected: "> 0", observed: fmt(syn.mi_joint) },
+          { label: "Stage 1: any cue posterior", expected: fmt(exp.syn_stage1_any), observed: fmt(syn.stage1_any) },
+          { label: "Stage 2: same relation posterior", expected: fmt(exp.syn_stage2_same), observed: fmt(syn.stage2_same) },
+          { label: "Stage 2: different relation posterior", expected: fmt(exp.syn_stage2_diff), observed: fmt(syn.stage2_diff) }
+        ]);
+
+        renderShell(`
+          <h2>${t("simulation.completedTitle")}</h2>
+          <p>${t("simulation.completedText")}</p>
+          <p class="muted">${t("simulation.completedMeta", { n: n.toLocaleString(currentLocale()) })}</p>
+          ${redTable}
+          ${synTable}
+          <div class="button-row">
+            <button id="downloadSimBtn">${t("simulation.downloadButton")}</button>
+            <button class="secondary" id="backBtn">${t("simulation.backButton")}</button>
+          </div>
+        `);
+
+        document.getElementById("downloadSimBtn").onclick = () => {
+          const payload = {
+            metadata: {
+              study_id: CONFIG.studyId,
+              experiment_version: CONFIG.experimentVersion,
+              simulation_n_per_architecture: n,
+              generated_at: new Date().toISOString(),
+              prior_probability_A: CONFIG.priorProbabilityA,
+              redundancy_cue_reliability: CONFIG.redundancyCueReliability,
+              synergy_joint_reliability: CONFIG.synergyJointReliability,
+              cue_order: state.cueOrder,
+              color_mapping: state.colorMapping,
+              shape_mapping: state.shapeMapping
+            },
+            redundancy_dominant: red,
+            synergy_dominant: syn,
+            expected_posteriors: exp
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `simulation_validation_${CONFIG.experimentVersion}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        };
+
+        document.getElementById("backBtn").onclick = () => showConsent();
+      }, 80);
+    }
+
+    function showInstructions() {
+      const priorText = state.priorType === "explicit"
+        ? `<p><strong>${t("instructions.explicitPrior", { a: percent(CONFIG.priorProbabilityA), b: percent(1 - CONFIG.priorProbabilityA) })}</strong></p>`
+        : `<p>${t("instructions.implicitPrior")}</p>`;
+
+      renderShell(`
+        <h2>${t("instructions.title")}</h2>
+        <p>${t("instructions.intro")}</p>
+        ${priorText}
+        <ol>
+          ${t("instructions.steps").map(step => `<li>${step}</li>`).join("")}
+        </ol>
+        <p>${t("instructions.blockInfo")}</p>
+        <p class="muted">${t("instructions.muted")}</p>
+        <div class="button-row">
+          <button id="continueBtn">${t("instructions.continueButton")}</button>
+        </div>
+      `);
+
+      document.getElementById("continueBtn").onclick = () => {
+        logEvent("instructions_viewed", {
+          prior_type: state.priorType,
+          architecture_order: state.architectureOrder,
+          cue_order: state.cueOrder,
+          color_mapping: state.colorMapping,
+          shape_mapping: state.shapeMapping,
+          language: state.language
+        });
+        showComprehensionCheck();
+      };
+    }
+
+    function showComprehensionCheck(feedback = "") {
+      renderShell(`
+        <h2>${t("comprehension.title")}</h2>
+        ${feedback ? `<p class="warning">${feedback}</p>` : ""}
+        <div class="question-box">
+          <p><strong>${t("comprehension.q1")}</strong></p>
+          <label class="option"><input type="radio" name="q1" value="posterior"> ${t("comprehension.q1Posterior")}</label>
+          <label class="option"><input type="radio" name="q1" value="memory"> ${t("comprehension.q1Memory")}</label>
+          <label class="option"><input type="radio" name="q1" value="random"> ${t("comprehension.q1Random")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("comprehension.q2")}</strong></p>
+          <label class="option"><input type="radio" name="q2" value="ignore_first"> ${t("comprehension.q2Ignore")}</label>
+          <label class="option"><input type="radio" name="q2" value="combine"> ${t("comprehension.q2Combine")}</label>
+          <label class="option"><input type="radio" name="q2" value="always50"> ${t("comprehension.q2Always50")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("comprehension.q3")}</strong></p>
+          <label class="option"><input type="radio" name="q3" value="yes"> ${t("terms.yes")}</label>
+          <label class="option"><input type="radio" name="q3" value="no"> ${t("terms.no")}</label>
+        </div>
+        <div class="button-row">
+          <button id="checkBtn">${t("comprehension.button")}</button>
+        </div>
+      `);
+
+      document.getElementById("checkBtn").onclick = () => {
+        const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+        const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+        const q3 = document.querySelector('input[name="q3"]:checked')?.value;
+        const correct = q1 === "posterior" && q2 === "combine" && q3 === "yes";
+
+        const row = {
+          comprehension_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          q1, q2, q3,
+          correct,
+          submitted_at_client: new Date().toISOString()
+        };
+        state.comprehensionResponses.push(row);
+        logEvent("comprehension_submitted", row);
+
+        if (correct) showBlockIntro();
+        else showComprehensionCheck(t("comprehension.retry"));
+      };
+    }
+
+    function showBlockIntro() {
+      const architecture = state.architectureOrder[state.currentBlockIndex];
+      state.blockStartedAt = Date.now();
+      renderShell(`
+        <h2>${t("blockIntro.title", { number: state.currentBlockIndex + 1 })}</h2>
+        <p>${t("blockIntro.p1")}</p>
+        <p class="muted">${t("blockIntro.p2")}</p>
+        <div class="button-row">
+          <button id="blockStartBtn">${t("blockIntro.button")}</button>
+        </div>
+      `);
+
+      document.getElementById("blockStartBtn").onclick = () => {
+        logEvent("block_started", { architecture, block_index: state.currentBlockIndex + 1 });
+        showTrialStage1();
+      };
+    }
+
+    function cueCard(label, value, dimension, isEmpty = false) {
+      const symbol = value === "Mavi" ? "■" : value === "Turuncu" ? "■" : value === "Üçgen" ? "▲" : value === "Daire" ? "●" : "?";
+      const color = value === "Mavi" ? "#2563eb" : value === "Turuncu" ? "#f97316" : "#0f172a";
+      const dimLabel = dimension === "color" ? t("cue.colorSensor") : dimension === "shape" ? t("cue.shapeSensor") : label;
+      return `
+        <div class="cue-card ${isEmpty ? "empty-cue" : ""}">
+          <div class="cue-label">${label} · ${dimLabel}</div>
+          <div class="cue-value">${displayCueValue(value)}</div>
+          <div class="cue-symbol" style="color:${color}">${isEmpty ? "?" : symbol}</div>
+        </div>
+      `;
+    }
+
+    function sliderHtml(question, initialValue) {
+      return `
+        <div class="slider-box">
+          <h3>${question}</h3>
+          <div class="slider-value"><span id="sliderVal">${initialValue}</span>%</div>
+          <input id="posteriorSlider" type="range" min="0" max="100" value="${initialValue}" />
+          <div class="slider-labels">
+            <span>${t("slider.low")}</span>
+            <span>${t("slider.mid")}</span>
+            <span>${t("slider.high")}</span>
+          </div>
+          <div class="button-row">
+            <button id="submitSliderBtn">${t("slider.submit")}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setupSlider(onSubmit) {
+      const slider = document.getElementById("posteriorSlider");
+      const val = document.getElementById("sliderVal");
+      slider.oninput = () => {
+        state.currentSliderValue = Number(slider.value);
+        val.textContent = state.currentSliderValue;
+      };
+      document.getElementById("submitSliderBtn").onclick = onSubmit;
+    }
+
+    function showTrialStage1() {
+      const trial = currentTrial();
+      state.currentSliderValue = CONFIG.sliderStart;
+      state.currentStage = 1;
+      state.stage1RtStart = Date.now();
+      logEvent("trial_started", { trial_id: trial.trial_id, architecture: trial.architecture });
+      logEvent("cue_presented", { trial_id: trial.trial_id, stage: 1, cue1_value: trial.cue1_value, cue1_dimension: trial.cue1_dimension });
+
+      renderShell(`
+        <h2>${t("terms.trial")} ${trial.trial_index_block} / ${CONFIG.trialsPerArchitecture}</h2>
+        <p class="muted">${state.priorType === "explicit" ? t("trial.priorExplicit", { block: trial.block_index, a: percent(CONFIG.priorProbabilityA) }) : t("trial.priorImplicit", { block: trial.block_index })}</p>
+        <div class="cue-grid">
+          ${cueCard(t("cue.sensor1"), trial.cue1_value, trial.cue1_dimension)}
+          ${cueCard(t("cue.sensor2"), null, trial.cue2_dimension, true)}
+        </div>
+        ${sliderHtml(t("trial.stage1Question"), CONFIG.sliderStart)}
+      `);
+
+      setupSlider(() => {
+        const rt = Date.now() - state.stage1RtStart;
+        const responseProb = state.currentSliderValue / 100;
+        state.stage1Response = responseProb;
+
+        const row = {
+          stage_response_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          block_id: trial.block_id,
+          trial_id: trial.trial_id,
+          stage: 1,
+          architecture: trial.architecture,
+          prior_type: state.priorType,
+          response_prob_A: responseProb,
+          response_percent_A: state.currentSliderValue,
+          response_logit_A: logit(responseProb),
+          slider_initial_value: CONFIG.sliderStart,
+          slider_changed_from_initial: state.currentSliderValue !== CONFIG.sliderStart,
+          rt_ms: rt,
+          normative_prob_A: trial.normative_stage1_prob_A,
+          normative_logit_A: trial.normative_stage1_logit_A,
+          signed_error_prob: responseProb - trial.normative_stage1_prob_A,
+          abs_error_prob: Math.abs(responseProb - trial.normative_stage1_prob_A),
+          submitted_at_client: new Date().toISOString(),
+          missing: false
+        };
+
+        state.stageResponses.push(row);
+        logEvent("posterior_submitted", row);
+        showTrialStage2();
+      });
+    }
+
+    function showTrialStage2() {
+      const trial = currentTrial();
+      const initial = Math.round(state.stage1Response * 100);
+      state.currentSliderValue = initial;
+      state.currentStage = 2;
+      state.stage2RtStart = Date.now();
+      logEvent("cue_presented", { trial_id: trial.trial_id, stage: 2, cue2_value: trial.cue2_value, cue2_dimension: trial.cue2_dimension });
+
+      renderShell(`
+        <h2>${t("terms.trial")} ${trial.trial_index_block} / ${CONFIG.trialsPerArchitecture}</h2>
+        <p class="muted">${t("trial.stage2Hint")}</p>
+        <div class="cue-grid">
+          ${cueCard(t("cue.sensor1"), trial.cue1_value, trial.cue1_dimension)}
+          ${cueCard(t("cue.sensor2"), trial.cue2_value, trial.cue2_dimension)}
+        </div>
+        ${sliderHtml(t("trial.stage2Question"), initial)}
+      `);
+
+      setupSlider(() => {
+        const rt = Date.now() - state.stage2RtStart;
+        const responseProb = state.currentSliderValue / 100;
+
+        const row = {
+          stage_response_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          block_id: trial.block_id,
+          trial_id: trial.trial_id,
+          stage: 2,
+          architecture: trial.architecture,
+          prior_type: state.priorType,
+          response_prob_A: responseProb,
+          response_percent_A: state.currentSliderValue,
+          response_logit_A: logit(responseProb),
+          slider_initial_value: initial,
+          slider_changed_from_initial: state.currentSliderValue !== initial,
+          rt_ms: rt,
+          normative_prob_A: trial.normative_stage2_prob_A,
+          normative_logit_A: trial.normative_stage2_logit_A,
+          signed_error_prob: responseProb - trial.normative_stage2_prob_A,
+          abs_error_prob: Math.abs(responseProb - trial.normative_stage2_prob_A),
+          update_from_previous_stage: responseProb - state.stage1Response,
+          submitted_at_client: new Date().toISOString(),
+          missing: false
+        };
+
+        state.stageResponses.push(row);
+        logEvent("posterior_submitted", row);
+        showFinalChoice();
+      });
+    }
+
+    function showFinalChoice() {
+      const trial = currentTrial();
+      state.choiceRtStart = Date.now();
+      renderShell(`
+        <h2>${t("choice.title")}</h2>
+        <p>${t("choice.question")}</p>
+        <div class="cue-grid">
+          ${cueCard(t("cue.sensor1"), trial.cue1_value, trial.cue1_dimension)}
+          ${cueCard(t("cue.sensor2"), trial.cue2_value, trial.cue2_dimension)}
+        </div>
+        <div class="choice-grid">
+          <button class="choice-button" id="chooseA">${t("terms.systemA")}</button>
+          <button class="choice-button" id="chooseB">${t("terms.systemB")}</button>
+        </div>
+      `);
+
+      document.getElementById("chooseA").onclick = () => submitChoice("A");
+      document.getElementById("chooseB").onclick = () => submitChoice("B");
+    }
+
+    function submitChoice(choice) {
+      const trial = currentTrial();
+      const rt = Date.now() - state.choiceRtStart;
+      const correct = choice === trial.true_state;
+      const row = {
+        choice_id: crypto.randomUUID(),
+        participant_id: state.participantId,
+        session_id: state.sessionId,
+        block_id: trial.block_id,
+        trial_id: trial.trial_id,
+        choice,
+        correct,
+        rt_ms: rt,
+        normative_choice: trial.normative_choice,
+        submitted_at_client: new Date().toISOString(),
+        missing: false
+      };
+
+      state.finalChoices.push(row);
+      state.trials.push({ ...trial, trial_completed_at_client: new Date().toISOString() });
+      logEvent("final_choice_submitted", row);
+
+      if (trial.is_confidence_trial) showConfidence();
+      else showFeedback();
+    }
+
+    function showConfidence() {
+      const trial = currentTrial();
+      const initial = 50;
+      state.currentSliderValue = initial;
+      const start = Date.now();
+
+      renderShell(`
+        <h2>${t("confidence.title")}</h2>
+        <p>${t("confidence.question")}</p>
+        <div class="slider-box">
+          <div class="slider-value"><span id="sliderVal">${initial}</span>%</div>
+          <input id="posteriorSlider" type="range" min="0" max="100" value="${initial}" />
+          <div class="slider-labels">
+            <span>${t("confidence.low")}</span>
+            <span>${t("confidence.high")}</span>
+          </div>
+          <div class="button-row">
+            <button id="submitSliderBtn">${t("confidence.button")}</button>
+          </div>
+        </div>
+      `);
+
+      setupSlider(() => {
+        const latestChoice = state.finalChoices[state.finalChoices.length - 1];
+        const row = {
+          confidence_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          block_id: trial.block_id,
+          trial_id: trial.trial_id,
+          confidence_percent: state.currentSliderValue,
+          confidence_prob: state.currentSliderValue / 100,
+          rt_ms: Date.now() - start,
+          final_choice: latestChoice.choice,
+          correct: latestChoice.correct,
+          submitted_at_client: new Date().toISOString(),
+          missing: false
+        };
+
+        state.confidenceResponses.push(row);
+        logEvent("confidence_submitted", row);
+        showFeedback();
+      });
+    }
+
+    function showFeedback() {
+      const trial = currentTrial();
+      const latestChoice = state.finalChoices[state.finalChoices.length - 1];
+      const cls = latestChoice.correct ? "correct" : "wrong";
+      const msg = latestChoice.correct ? t("feedback.correct") : t("feedback.wrong");
+      logEvent("feedback_shown", { trial_id: trial.trial_id, true_state: trial.true_state, correct: latestChoice.correct });
+
+      const debugHtml = CONFIG.debugShowNormativeInFeedback ? `
+        <div class="small-grid">
+          <div class="metric">${t("feedback.normativeStage1")}<strong>${percent(trial.normative_stage1_prob_A)}</strong></div>
+          <div class="metric">${t("feedback.normativeStage2")}<strong>${percent(trial.normative_stage2_prob_A)}</strong></div>
+          <div class="metric">${t("feedback.architecture")}<strong>${trial.architecture}</strong></div>
+        </div>
+      ` : "";
+
+      renderShell(`
+        <h2>${t("feedback.title")}</h2>
+        <div class="feedback ${cls}">
+          <h3>${msg}</h3>
+          <p>${t("feedback.trueSystem")} <strong>${displaySystem(trial.true_state)}</strong></p>
+          <p>${t("feedback.yourChoice")} <strong>${displaySystem(latestChoice.choice)}</strong></p>
+        </div>
+        ${debugHtml}
+        <div class="button-row">
+          <button id="continueBtn">${t("feedback.continueButton")}</button>
+        </div>
+      `);
+
+      document.getElementById("continueBtn").onclick = () => {
+        if (trial.is_prior_report_due_after) showPriorReport();
+        else nextTrialOrBlock();
+      };
+    }
+
+    function showPriorReport() {
+      const trial = currentTrial();
+      const initial = CONFIG.sliderStart;
+      state.currentSliderValue = initial;
+      const start = Date.now();
+
+      renderShell(`
+        <h2>${t("priorReport.title")}</h2>
+        <p>${t("priorReport.question")}</p>
+        <div class="slider-box">
+          <div class="slider-value"><span id="sliderVal">${initial}</span>%</div>
+          <input id="posteriorSlider" type="range" min="0" max="100" value="${initial}" />
+          <div class="slider-labels">
+            <span>${t("priorReport.low")}</span>
+            <span>${t("priorReport.high")}</span>
+          </div>
+          <div class="button-row">
+            <button id="submitSliderBtn">${t("priorReport.button")}</button>
+          </div>
+        </div>
+      `);
+
+      setupSlider(() => {
+        const completedTrials = state.trials;
+        const experiencedA = completedTrials.filter(t => t.true_state === "A").length / Math.max(1, completedTrials.length);
+        const row = {
+          prior_report_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          block_id: trial.block_id,
+          after_trial_id: trial.trial_id,
+          report_index: state.priorReports.length + 1,
+          report_phase: "periodic",
+          reported_prob_A: state.currentSliderValue / 100,
+          reported_percent_A: state.currentSliderValue,
+          reported_logit_A: logit(state.currentSliderValue / 100),
+          generative_prior_A: CONFIG.priorProbabilityA,
+          experienced_frequency_A_so_far: experiencedA,
+          feedback_count_so_far: completedTrials.length,
+          rt_ms: Date.now() - start,
+          submitted_at_client: new Date().toISOString(),
+          missing: false
+        };
+
+        state.priorReports.push(row);
+        logEvent("prior_report_submitted", row);
+        nextTrialOrBlock();
+      });
+    }
+
+    function nextTrialOrBlock() {
+      state.currentTrialIndex += 1;
+      const next = currentTrial();
+      if (!next) {
+        showPostTask();
+        return;
+      }
+
+      const prevBlockIdx = state.currentBlockIndex + 1;
+      if (next.block_index !== prevBlockIdx) {
+        logEvent("block_completed", { block_index: prevBlockIdx, duration_ms: Date.now() - state.blockStartedAt });
+        state.currentBlockIndex += 1;
+        showBreakScreen();
+      } else {
+        showTrialStage1();
+      }
+    }
+
+    function showBreakScreen() {
+      renderShell(`
+        <h2>${t("break.title")}</h2>
+        <p>${t("break.p1")}</p>
+        <p>${t("break.p2")}</p>
+        <div class="button-row">
+          <button id="nextBlockBtn">${t("break.button")}</button>
+        </div>
+      `);
+
+      document.getElementById("nextBlockBtn").onclick = () => showBlockIntro();
+    }
+
+    function showPostTask() {
+      renderShell(`
+        <h2>${t("postTask.title")}</h2>
+        <p>${t("postTask.intro")}</p>
+        <div class="question-box">
+          <p><strong>${t("postTask.strategyQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="strategyCategory" value="single_cue_color"> ${t("postTask.strategySingleColor")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="single_cue_shape"> ${t("postTask.strategySingleShape")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="both_cues_separately"> ${t("postTask.strategyBoth")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="cue_relation_same_different"> ${t("postTask.strategyRelation")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="base_rate_only"> ${t("postTask.strategyBaseRate")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="feedback_learning"> ${t("postTask.strategyFeedback")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="random_or_guessing"> ${t("postTask.strategyGuessing")}</label>
+          <label class="option"><input type="radio" name="strategyCategory" value="other_unsure"> ${t("terms.otherUnsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.ruleChangeQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="ruleChange" value="yes"> ${t("terms.yes")}</label>
+          <label class="option"><input type="radio" name="ruleChange" value="no"> ${t("terms.no")}</label>
+          <label class="option"><input type="radio" name="ruleChange" value="unsure"> ${t("terms.unsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.baseRateQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="baseRateAwareness" value="A_more"> ${t("postTask.baseRateAMore")}</label>
+          <label class="option"><input type="radio" name="baseRateAwareness" value="B_more"> ${t("postTask.baseRateBMore")}</label>
+          <label class="option"><input type="radio" name="baseRateAwareness" value="equal"> ${t("postTask.baseRateEqual")}</label>
+          <label class="option"><input type="radio" name="baseRateAwareness" value="unsure"> ${t("terms.unsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.colorUseQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="colorUse" value="yes"> ${t("terms.yes")}</label>
+          <label class="option"><input type="radio" name="colorUse" value="no"> ${t("terms.no")}</label>
+          <label class="option"><input type="radio" name="colorUse" value="unsure"> ${t("terms.unsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.shapeUseQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="shapeUse" value="yes"> ${t("terms.yes")}</label>
+          <label class="option"><input type="radio" name="shapeUse" value="no"> ${t("terms.no")}</label>
+          <label class="option"><input type="radio" name="shapeUse" value="unsure"> ${t("terms.unsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.relationUseQuestion")}</strong></p>
+          <label class="option"><input type="radio" name="relationUse" value="yes"> ${t("terms.yes")}</label>
+          <label class="option"><input type="radio" name="relationUse" value="no"> ${t("terms.no")}</label>
+          <label class="option"><input type="radio" name="relationUse" value="unsure"> ${t("terms.unsure")}</label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.understandingQuestion")}</strong></p>
+          <label class="option">${t("postTask.scale")}<br><input id="understandingRating" type="range" min="1" max="7" value="4"></label>
+        </div>
+        <div class="question-box">
+          <p><strong>${t("postTask.attentionQuestion")}</strong></p>
+          <label class="option">${t("postTask.scale")}<br><input id="attentionRating" type="range" min="1" max="7" value="4"></label>
+        </div>
+        <p id="postTaskError" class="warning hidden">${t("postTask.error")}</p>
+        <div class="button-row">
+          <button id="finishBtn">${t("postTask.finishButton")}</button>
+        </div>
+      `);
+
+      document.getElementById("finishBtn").onclick = () => {
+        const selectedValue = name => document.querySelector(`input[name="${name}"]:checked`)?.value || null;
+        const strategyCategory = selectedValue("strategyCategory");
+        const ruleChange = selectedValue("ruleChange");
+        const baseRateAwareness = selectedValue("baseRateAwareness");
+        const colorUse = selectedValue("colorUse");
+        const shapeUse = selectedValue("shapeUse");
+        const relationUse = selectedValue("relationUse");
+
+        if (!strategyCategory || !ruleChange || !baseRateAwareness || !colorUse || !shapeUse || !relationUse) {
+          document.getElementById("postTaskError").classList.remove("hidden");
+          return;
+        }
+
+        const row = {
+          post_task_id: crypto.randomUUID(),
+          participant_id: state.participantId,
+          session_id: state.sessionId,
+          strategy_category: strategyCategory,
+          rule_change_response: ruleChange,
+          base_rate_awareness_response: baseRateAwareness,
+          color_use_response: colorUse,
+          shape_use_response: shapeUse,
+          relation_use_response: relationUse,
+          self_report_understanding: Number(document.getElementById("understandingRating").value),
+          self_report_attention: Number(document.getElementById("attentionRating").value),
+          submitted_at_client: new Date().toISOString()
+        };
+
+        state.postTaskResponses.push(row);
+        logEvent("post_task_response_submitted", row);
+        logEvent("session_completed", { total_duration_ms: Date.now() - state.startedAt });
+        showEnd();
+      };
+    }
+
+    /**********************************************************************
+     * EXPORT / SAVE
+     **********************************************************************/
+
+    function validateExport(payload) {
+      const checks = [];
+      const addCheck = (name, passed, severity = "critical", detail = null) => {
+        checks.push({ name, passed: Boolean(passed), severity, detail });
+      };
+      const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
+      const uniqueCount = values => new Set(values.filter(Boolean)).size;
+      const inRange = (value, lo, hi) => typeof value === "number" && Number.isFinite(value) && value >= lo && value <= hi;
+      const requiredTopLevel = [
+        "metadata",
+        "validation_results",
+        "trials",
+        "stage_responses",
+        "final_choices",
+        "confidence_responses",
+        "prior_reports",
+        "post_task_responses",
+        "quality_events",
+        "raw_events"
+      ];
+      const requiredMetadata = [
+        "session_id",
+        "participant_id",
+        "study_id",
+        "experiment_version",
+        "schema_version",
+        "simulated",
+        "prior_type",
+        "architecture_order",
+        "cue_order",
+        "color_mapping",
+        "shape_mapping",
+        "started_at_client",
+        "completed_at_client",
+        "total_duration_ms",
+        "completion_status",
+        "validation_passed",
+        "critical_validation_fails",
+        "warning_validation_fails"
+      ];
+
+      addCheck("top_level_fields_present", requiredTopLevel.every(key => Object.prototype.hasOwnProperty.call(payload, key)));
+      addCheck("no_legacy_participants_export", !Object.prototype.hasOwnProperty.call(payload, "participants"));
+      addCheck("metadata_is_object", isObject(payload.metadata));
+      addCheck("metadata_required_fields_present", requiredMetadata.every(key => Object.prototype.hasOwnProperty.call(payload.metadata, key)));
+      addCheck("metadata_schema_version_1_0_0", payload.metadata.schema_version === CONFIG.schemaVersion);
+      addCheck("metadata_simulated_false", payload.metadata.simulated === false);
+      addCheck("forbidden_metadata_absent", !("user_agent" in payload.metadata) && !("screen" in payload.metadata) && !("platform_id" in payload.metadata));
+
+      const trials = payload.trials || [];
+      const stages = payload.stage_responses || [];
+      const choices = payload.final_choices || [];
+      const confidences = payload.confidence_responses || [];
+      const priors = payload.prior_reports || [];
+      const postTask = payload.post_task_responses || [];
+      const quality = payload.quality_events || [];
+      const raw = payload.raw_events || [];
+
+      const trialIds = new Set(trials.map(row => row.trial_id));
+      const sessionId = payload.metadata.session_id;
+      const participantId = payload.metadata.participant_id;
+      const stageCounts = {};
+      const choiceCounts = {};
+      stages.forEach(row => { stageCounts[row.trial_id] = (stageCounts[row.trial_id] || 0) + 1; });
+      choices.forEach(row => { choiceCounts[row.trial_id] = (choiceCounts[row.trial_id] || 0) + 1; });
+
+      addCheck("trial_ids_unique", uniqueCount(trials.map(row => row.trial_id)) === trials.length);
+      addCheck("stage_response_ids_unique", uniqueCount(stages.map(row => row.stage_response_id)) === stages.length);
+      addCheck("choice_ids_unique", uniqueCount(choices.map(row => row.choice_id)) === choices.length);
+      addCheck("all_rows_match_session_and_participant", [trials, stages, choices, confidences, priors, postTask, quality, raw].flat().every(row => row.session_id === sessionId && row.participant_id === participantId));
+      addCheck("each_trial_has_two_stage_responses", trials.every(row => stageCounts[row.trial_id] === 2));
+      addCheck("each_trial_has_one_final_choice", trials.every(row => choiceCounts[row.trial_id] === 1));
+      addCheck("stage_trial_fk_valid", stages.every(row => trialIds.has(row.trial_id)));
+      addCheck("choice_trial_fk_valid", choices.every(row => trialIds.has(row.trial_id)));
+      addCheck("confidence_trial_fk_valid", confidences.every(row => trialIds.has(row.trial_id)));
+      addCheck("prior_after_trial_fk_valid", priors.every(row => trialIds.has(row.after_trial_id)));
+      addCheck("trial_probability_ranges_valid", trials.every(row =>
+        inRange(row.prior_probability_A, 0, 1) &&
+        inRange(row.likelihood_cue1_given_A, 0, 1) &&
+        inRange(row.likelihood_cue1_given_B, 0, 1) &&
+        inRange(row.likelihood_joint_given_A, 0, 1) &&
+        inRange(row.likelihood_joint_given_B, 0, 1) &&
+        inRange(row.normative_stage1_prob_A, 0, 1) &&
+        inRange(row.normative_stage2_prob_A, 0, 1)
+      ));
+      addCheck("stage_response_ranges_valid", stages.every(row =>
+        inRange(row.response_prob_A, 0, 1) &&
+        inRange(row.response_percent_A, 0, 100) &&
+        inRange(row.normative_prob_A, 0, 1) &&
+        typeof row.rt_ms === "number" && row.rt_ms >= 0
+      ));
+      addCheck("choice_rt_valid", choices.every(row => typeof row.rt_ms === "number" && row.rt_ms >= 0));
+      addCheck("confidence_ranges_valid", confidences.every(row => inRange(row.confidence_percent, 0, 100) && inRange(row.confidence_prob, 0, 1)));
+      addCheck("prior_report_ranges_valid", priors.every(row => inRange(row.reported_percent_A, 0, 100) && inRange(row.reported_prob_A, 0, 1)));
+      addCheck("post_task_structured_no_text", postTask.every(row =>
+        row.strategy_category &&
+        row.color_use_response &&
+        row.shape_use_response &&
+        row.relation_use_response &&
+        !("strategy_text" in row) &&
+        inRange(row.self_report_understanding, 1, 7) &&
+        inRange(row.self_report_attention, 1, 7)
+      ));
+
+      const criticalFails = checks.filter(check => check.severity === "critical" && !check.passed).length;
+      const warningFails = checks.filter(check => check.severity === "warning" && !check.passed).length;
+      return {
+        validation_id: crypto.randomUUID(),
+        session_id: payload.metadata.session_id,
+        participant_id: payload.metadata.participant_id,
+        validation_passed_for_analysis: criticalFails === 0,
+        passed_checks: checks.filter(check => check.passed).length,
+        total_checks: checks.length,
+        critical_fails: criticalFails,
+        warning_fails: warningFails,
+        validation_json: { checks }
+      };
+    }
+
+    function buildExport() {
+      recordQualityEvent("validation_run");
+      const completedAtClient = new Date().toISOString();
+      const totalDurationMs = Date.now() - state.startedAt;
+      const payload = {
+        metadata: {
+          session_id: state.sessionId,
+          participant_id: state.participantId,
+          study_id: CONFIG.studyId,
+          experiment_version: CONFIG.experimentVersion,
+          schema_version: CONFIG.schemaVersion,
+          simulated: false,
+          language: state.language,
+          prior_type: state.priorType,
+          architecture_order: state.architectureOrder,
+          cue_order: state.cueOrder,
+          color_mapping: state.colorMapping,
+          shape_mapping: state.shapeMapping,
+          started_at_client: new Date(state.startedAt).toISOString(),
+          completed_at_client: completedAtClient,
+          total_duration_ms: totalDurationMs,
+          completion_status: "completed",
+          validation_passed: false,
+          critical_validation_fails: 0,
+          warning_validation_fails: 0
+        },
+        validation_results: {},
+        trials: state.trials,
+        stage_responses: state.stageResponses,
+        final_choices: state.finalChoices,
+        confidence_responses: state.confidenceResponses,
+        prior_reports: state.priorReports,
+        post_task_responses: state.postTaskResponses,
+        quality_events: state.qualityEvents,
+        raw_events: state.rawEvents
+      };
+      const validationResults = validateExport(payload);
+      payload.validation_results = validationResults;
+      payload.metadata.validation_passed = validationResults.validation_passed_for_analysis;
+      payload.metadata.critical_validation_fails = validationResults.critical_fails;
+      payload.metadata.warning_validation_fails = validationResults.warning_fails;
+      recordQualityEvent(validationResults.validation_passed_for_analysis ? "validation_passed" : "validation_failed");
+      payload.quality_events = state.qualityEvents;
+      payload.raw_events = state.rawEvents;
+      return payload;
+    }
+
+    function downloadJson() {
+      const data = buildExport();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `belief_updating_${state.participantId.slice(0, 8)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function saveData() {
+      // Replace this function with Firebase/Supabase/server POST for real data collection.
+      // For now, local download is the safest transparent behavior.
+      recordQualityEvent("save_attempt");
+      recordQualityEvent("save_success");
+      downloadJson();
+      return true;
+    }
+
+    function showEnd() {
+      const accuracy = state.finalChoices.filter(x => x.correct).length / Math.max(1, state.finalChoices.length);
+      renderShell(`
+        <h2>${t("end.title")}</h2>
+        <p>${t("end.text")}</p>
+        <div class="small-grid">
+          <div class="metric">${t("end.trials")}<strong>${state.finalChoices.length}</strong></div>
+          <div class="metric">${t("end.accuracy")}<strong>${percent(accuracy)}</strong></div>
+          <div class="metric">${t("end.posterior")}<strong>${state.stageResponses.length}</strong></div>
+        </div>
+        <div class="button-row">
+          <button id="downloadBtn">${t("end.download")}</button>
+          ${CONFIG.allowRestart ? `<button class="secondary" id="restartBtn">${t("end.restart")}</button>` : ""}
+        </div>
+      `);
+
+      document.getElementById("downloadBtn").onclick = saveData;
+      if (CONFIG.allowRestart) {
+        document.getElementById("restartBtn").onclick = () => window.location.reload();
+      }
+    }
+
+    /**********************************************************************
+     * QUALITY EVENTS
+     **********************************************************************/
+
+    window.addEventListener("blur", () => {
+      recordQualityEvent("focus_lost");
+    });
+
+    window.addEventListener("focus", () => {
+      recordQualityEvent("focus_returned");
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      const eventType = document.hidden ? "visibility_hidden" : "visibility_visible";
+      recordQualityEvent(eventType);
+    });
+
+    showConsent();
+  </script>
+</body>
+</html>
