@@ -5,7 +5,7 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const studyId = "belief_architecture_v1";
+const studyId = "belief_architecture_v2";
 
 async function main() {
   const participantsSnap = await db

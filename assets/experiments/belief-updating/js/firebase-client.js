@@ -16,7 +16,11 @@ const db = getFirestore(app);
 
 let authUser = null;
 
-export async function startFirebaseSession({ config, participantId, sessionId, clientInfo = {} }) {
+function exportLanguage(exportData) {
+  return exportData?.metadata?.lang || exportData?.metadata?.language || "unknown";
+}
+
+export async function startFirebaseSession({ config, participantId, sessionId, lang = "unknown", clientInfo = {} }) {
   const credential = await signInAnonymously(auth);
   authUser = credential.user;
 
@@ -30,6 +34,7 @@ export async function startFirebaseSession({ config, participantId, sessionId, c
     study_id: config.studyId,
     study_phase: config.studyPhase,
     experiment_version: config.experimentVersion,
+    lang,
     created_at: serverTimestamp(),
     client_info: clientInfo
   }, { merge: true });
@@ -41,6 +46,7 @@ export async function startFirebaseSession({ config, participantId, sessionId, c
     study_id: config.studyId,
     study_phase: config.studyPhase,
     experiment_version: config.experimentVersion,
+    lang,
     status: "started",
     started_at: serverTimestamp(),
     client_info: clientInfo
@@ -57,6 +63,21 @@ export async function startFirebaseSession({ config, participantId, sessionId, c
 
 function safeDocId(prefix, index) {
   return `${prefix}_${String(index + 1).padStart(5, "0")}`;
+}
+
+function rowDocId(collectionName, row, index) {
+  const idByCollection = {
+    trials: row.trial_id,
+    stage_responses: row.stage_response_id,
+    final_choices: row.choice_id,
+    confidence_responses: row.confidence_id,
+    prior_reports: row.prior_report_id,
+    post_task_responses: row.post_task_id,
+    quality_events: row.quality_event_id,
+    raw_events: row.event_id
+  };
+
+  return String(idByCollection[collectionName] || safeDocId(collectionName, index));
 }
 
 async function commitChunks(writeFns, chunkSize = 450) {
@@ -82,12 +103,14 @@ export async function saveExperimentData(exportData) {
   const studyId = metadata.study_id;
   const participantId = metadata.participant_id;
   const sessionId = metadata.session_id;
+  const lang = exportLanguage(exportData);
 
   const sessionRef = doc(db, "studies", studyId, "sessions", sessionId);
   const writeFns = [];
 
   writeFns.push((batch) => batch.set(sessionRef, {
     status: "completed",
+    lang,
     completed_at: serverTimestamp(),
     metadata,
     firebase_uid: auth.currentUser.uid
@@ -106,16 +129,7 @@ export async function saveExperimentData(exportData) {
 
   for (const [name, rows] of collectionMap) {
     rows.forEach((row, idx) => {
-      const id =
-        row.trial_id ||
-        row.stage_response_id ||
-        row.choice_id ||
-        row.confidence_id ||
-        row.prior_report_id ||
-        row.post_task_id ||
-        row.quality_event_id ||
-        row.event_id ||
-        safeDocId(name, idx);
+      const id = rowDocId(name, row, idx);
 
       writeFns.push((batch) => {
         const ref = doc(collection(db, "studies", studyId, "sessions", sessionId, name), String(id));
@@ -123,6 +137,8 @@ export async function saveExperimentData(exportData) {
           ...row,
           participant_id: participantId,
           session_id: sessionId,
+          lang: row.lang || lang,
+          firebase_uid: auth.currentUser.uid,
           saved_at: serverTimestamp()
         }, { merge: true });
       });

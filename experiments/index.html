@@ -126,6 +126,27 @@
     .pill-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 6px; }
     .pill { border-radius: 999px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 8px 12px; font-size: 14px; font-weight: 650; }
 
+    .study-about,
+    .study-debrief,
+    .study-contact {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 24px 0;
+      padding: 22px 0 8px;
+    }
+    .study-about h2,
+    .study-debrief h2,
+    .study-contact h2 { font-size: 24px; margin-bottom: 18px; }
+    .study-about h3,
+    .study-debrief h3 { font-size: 18px; margin: 22px 0 8px; }
+    .study-about p,
+    .study-debrief p,
+    .study-contact p,
+    .study-about li { font-size: 15.5px; line-height: 1.62; }
+    .study-about ul,
+    .study-about ol { padding-left: 24px; margin: 10px 0 16px; }
+    .study-contact a { color: var(--accent); font-weight: 650; }
+
     .cue-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
     .cue-card { min-height: 150px; border-radius: 20px; border: 1px solid var(--line); background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; }
     .cue-label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
@@ -167,10 +188,171 @@
 <body>
   <main><div id="app"></div></main>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      collection,
+      writeBatch,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAudyofVHsx4I-PYKtL7FUCKgy0jskAFvs",
+      authDomain: "thesis-bayes.firebaseapp.com",
+      projectId: "thesis-bayes",
+      storageBucket: "thesis-bayes.firebasestorage.app",
+      messagingSenderId: "207238555219",
+      appId: "1:207238555219:web:cf66b2dd68e7fe8d7d48a6",
+      measurementId: "G-4DN1WC5ZVW"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+
+    function exportLanguage(exportData) {
+      return exportData?.metadata?.lang || exportData?.metadata?.language || "unknown";
+    }
+
+    async function startFirebaseSession({ config, participantId, sessionId, lang = "unknown", clientInfo = {} }) {
+      const credential = await signInAnonymously(auth);
+      const participantRef = doc(db, "studies", config.studyId, "participants", participantId);
+      const sessionRef = doc(db, "studies", config.studyId, "sessions", sessionId);
+
+      const batch = writeBatch(db);
+      batch.set(participantRef, {
+        participant_id: participantId,
+        firebase_uid: credential.user.uid,
+        study_id: config.studyId,
+        study_phase: config.studyPhase,
+        experiment_version: config.experimentVersion,
+        lang,
+        created_at: serverTimestamp(),
+        client_info: clientInfo
+      }, { merge: true });
+
+      batch.set(sessionRef, {
+        session_id: sessionId,
+        participant_id: participantId,
+        firebase_uid: credential.user.uid,
+        study_id: config.studyId,
+        study_phase: config.studyPhase,
+        experiment_version: config.experimentVersion,
+        lang,
+        status: "started",
+        started_at: serverTimestamp(),
+        client_info: clientInfo
+      }, { merge: true });
+
+      await batch.commit();
+
+      return {
+        uid: credential.user.uid,
+        participantId,
+        sessionId
+      };
+    }
+
+    function safeDocId(prefix, index) {
+      return `${prefix}_${String(index + 1).padStart(5, "0")}`;
+    }
+
+    function rowDocId(collectionName, row, index) {
+      const idByCollection = {
+        trials: row.trial_id,
+        stage_responses: row.stage_response_id,
+        final_choices: row.choice_id,
+        confidence_responses: row.confidence_id,
+        prior_reports: row.prior_report_id,
+        post_task_responses: row.post_task_id,
+        quality_events: row.quality_event_id,
+        raw_events: row.event_id
+      };
+
+      return String(idByCollection[collectionName] || safeDocId(collectionName, index));
+    }
+
+    async function commitChunks(writeFns, chunkSize = 450) {
+      let committed = 0;
+      for (let i = 0; i < writeFns.length; i += chunkSize) {
+        const batch = writeBatch(db);
+        for (const fn of writeFns.slice(i, i + chunkSize)) {
+          fn(batch);
+        }
+        await batch.commit();
+        committed += Math.min(chunkSize, writeFns.length - i);
+      }
+      return committed;
+    }
+
+    async function saveExperimentData(exportData) {
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
+      }
+
+      const { metadata } = exportData;
+      const studyId = metadata.study_id;
+      const participantId = metadata.participant_id;
+      const sessionId = metadata.session_id;
+      const lang = exportLanguage(exportData);
+
+      const sessionRef = doc(db, "studies", studyId, "sessions", sessionId);
+      const writeFns = [];
+
+      writeFns.push((batch) => batch.set(sessionRef, {
+        status: "completed",
+        lang,
+        completed_at: serverTimestamp(),
+        metadata,
+        firebase_uid: auth.currentUser.uid
+      }, { merge: true }));
+
+      const collectionMap = [
+        ["trials", exportData.trials || []],
+        ["stage_responses", exportData.stage_responses || []],
+        ["final_choices", exportData.final_choices || []],
+        ["confidence_responses", exportData.confidence_responses || []],
+        ["prior_reports", exportData.prior_reports || []],
+        ["post_task_responses", exportData.post_task_responses || []],
+        ["quality_events", exportData.quality_events || []],
+        ["raw_events", exportData.raw_events || []]
+      ];
+
+      for (const [name, rows] of collectionMap) {
+        rows.forEach((row, idx) => {
+          const id = rowDocId(name, row, idx);
+
+          writeFns.push((batch) => {
+            const ref = doc(collection(db, "studies", studyId, "sessions", sessionId, name), String(id));
+            batch.set(ref, {
+              ...row,
+              participant_id: participantId,
+              session_id: sessionId,
+              lang: row.lang || lang,
+              firebase_uid: auth.currentUser.uid,
+              saved_at: serverTimestamp()
+            }, { merge: true });
+          });
+        });
+      }
+
+      const committed = await commitChunks(writeFns);
+
+      return {
+        ok: true,
+        committed,
+        studyId,
+        participantId,
+        sessionId
+      };
+    }
+
     /**********************************************************************
      * BELIEF UPDATING EXPERIMENT - OVERALL HTML VERSION
-     * Version: 0.2.0-fixed-generative
+     * Version: 0.2.1-fixed-generative-firebase
      *
      * Key fixes relative to prototype:
      * 1. true_state is sampled first from prior P(A).
@@ -179,14 +361,14 @@
      * 4. Stage 2 slider can be submitted unchanged.
      * 5. cue order is counterbalanced between participants.
      * 6. architecture labels use redundancy/synergy-dominant terminology.
-     * 7. data are downloadable as JSON; replace saveData() for server/Firebase.
+     * 7. data are saved to Firebase with downloadable JSON backup.
      **********************************************************************/
 
     const CONFIG = {
       studyId: "belief_architecture_v2",
-      experimentVersion: "0.2.0-fixed-generative",
+      experimentVersion: "0.2.1-fixed-generative-firebase",
       schemaVersion: "1.0.0",
-      studyPhase: "pilot_ready_local_json",
+      studyPhase: "firebase_pilot",
 
       // Core task parameters
       priorProbabilityA: 0.70,
@@ -228,6 +410,11 @@
           version: "Çalışma sürümü",
           participant: "Katılımcı"
         },
+        contact: {
+          title: "İletişim",
+          text: "Herhangi bir sorunuz veya geri bildiriminiz varsa, lütfen benimle iletişime geçmekten çekinmeyin. Çalışmanın yürütücüsü Muhammed Bilgin’dir; bana {email} adresinden ulaşabilirsiniz.",
+          email: "mebilgin@mebilgin.com"
+        },
         terms: {
           system: "Sistem",
           systemA: "Sistem A",
@@ -257,11 +444,95 @@
           p1: "Bu çalışmada iki gizli sistemden hangisinin aktif olduğunu tahmin edeceksin. Her denemede iki sensör sinyali sırayla gösterilecek. Her sinyalden sonra Sistem A'nın aktif olma olasılığını 0 ile 100 arasında tahmin edeceksin.",
           p2: "Katılım gönüllüdür. İstediğin zaman çalışmadan ayrılabilirsin. Yanıtların anonim bir katılımcı koduyla kaydedilecektir.",
           warningLabel: "Not:",
-          warning: "Bu HTML yerel JSON kayıtlı pilot sürümdür. Gerçek veri toplamada otomatik sunucu/Firebase kaydı eklenmelidir.",
+          warning: "Bu pilot sürüm yanıtları Firebase'e kaydeder. Bağlantı sorunu olursa deney sonunda JSON yedeği indirilebilir.",
           pill1: "İki aşamalı posterior ölçümü",
           pill2: "Redundancy-dominant vs synergy-dominant",
           pill3: "Correct generative model",
-          button: "Onaylıyorum ve başla"
+          button: "Onaylıyorum ve başla",
+          starting: "Oturum başlatılıyor...",
+          aboutTitle: "Çalışma Hakkında",
+          aboutSections: [
+            {
+              title: "Bu çalışmanın amacı nedir?",
+              paragraphs: [
+                "Bu çalışma, insanların belirsizlik altında karar verirken gelen bilgileri nasıl birleştirdiğini anlamayı amaçlamaktadır. Günlük yaşamda çoğu zaman tek bir bilgiye dayanarak karar vermeyiz. Bunun yerine farklı kaynaklardan gelen ipuçlarını, önceki beklentilerimizi ve yeni geri bildirimleri birlikte değerlendiririz.",
+                "Örneğin bir doktor tanı koyarken birden fazla test sonucunu, bir yatırımcı karar verirken farklı piyasa göstergelerini, bir öğrenci ise bir problemi çözerken önceki bilgisiyle yeni verilen ipuçlarını birlikte kullanır. Bu tür durumlarda yalnızca “ne kadar bilgi” olduğu değil, bu bilginin nasıl organize olduğu da önemlidir.",
+                "Bu deney, insanların farklı biçimlerde sunulan ipuçlarını nasıl kullandığını ve bu ipuçlarına göre inançlarını nasıl güncellediğini ölçmek için tasarlanmıştır."
+              ]
+            },
+            {
+              title: "Neden böyle bir deney yapıyoruz?",
+              paragraphs: [
+                "İnsan akıl yürütmesi ve karar verme üzerine yapılan birçok çalışma, insanların yeni kanıtlar karşısında ne kadar “doğru” güncelleme yaptığını inceler. Ancak bu çalışmaların çoğu, bilginin yapısını yeterince ayırt etmez. Oysa iki bilgi kaynağı aynı miktarda bilgi taşıyor gibi görünse bile, bu bilgilerin karar sürecindeki rolleri farklı olabilir.",
+                "Bazı durumlarda bir ipucu tek başına anlamlı olabilir. Bazı durumlarda ise tek bir ipucu yeterli olmayabilir ve anlam ancak birden fazla ipucu birlikte değerlendirildiğinde ortaya çıkabilir. Bu ayrım, insanların hangi bilgiyi ne zaman dikkate aldığını, hangi aşamada güncelleme yaptığını ve hangi tür bilgi yapılarında zorlandığını anlamak açısından önemlidir.",
+                "Bu nedenle deneyde katılımcılardan, iki aşamalı bir tahmin görevi içinde olasılık yargıları vermeleri istenir. Katılımcılar her denemede önce bir ipucu, sonra ikinci bir ipucu görür. Her aşamada Sistem A’nın aktif olma olasılığını tahmin ederler. Böylece yalnızca son karar değil, kararın nasıl oluştuğu da ölçülebilir."
+              ]
+            },
+            {
+              title: "Neden bu verinin toplanmasına ihtiyaç var?",
+              paragraphs: [
+                "Bu çalışmanın temel sorusu yalnızca insanların doğru ya da yanlış karar verip vermediği değildir. Asıl amaç, insanların inançlarını güncellerken hangi bilgi düzenlerine daha duyarlı olduğunu anlamaktır.",
+                "Bunun için gerçek katılımcı verisine ihtiyaç vardır. Çünkü bilgisayar simülasyonları bize normatif olarak hangi tahminin yapılması gerektiğini gösterebilir; ancak insanların bu bilgiyi gerçekten nasıl kullandığını, hangi aşamada güncellediğini, hangi ipuçlarını fazla ya da eksik ağırlıklandırdığını yalnızca davranışsal veriyle görebiliriz.",
+                "Bu çalışmada toplanan veriler şu soruları yanıtlamaya yardımcı olacaktır:"
+              ],
+              bullets: [
+                "İnsanlar ilk ipucunu gördükten sonra inançlarını ne kadar güncelliyor?",
+                "İkinci ipucu geldiğinde önceki tahminlerini nasıl değiştiriyor?",
+                "Farklı bilgi yapıları, aynı karar görevinde farklı güncelleme örüntüleri oluşturuyor mu?",
+                "Önceden verilen bilgi ile deneyim yoluyla öğrenilen bilgi arasında fark var mı?",
+                "İnsanların son kararları ile ara olasılık tahminleri birbirinden nasıl ayrışıyor?"
+              ],
+              after: [
+                "Bu sorular, insan akıl yürütmesinin yalnızca sonuç odaklı değil, süreç odaklı olarak da anlaşılması açısından önemlidir."
+              ]
+            },
+            {
+              title: "Katılımcılar deneyde ne yapacak?",
+              paragraphs: [
+                "Deneyde iki olası sistem vardır: Sistem A ve Sistem B. Her denemede bu sistemlerden biri aktif olur. Katılımcının görevi, verilen ipuçlarına bakarak hangi sistemin aktif olduğunu tahmin etmektir.",
+                "Her deneme birkaç adımdan oluşur:"
+              ],
+              steps: [
+                "İlk ipucu gösterilir.",
+                "Katılımcı, Sistem A’nın aktif olma olasılığını 0 ile 100 arasında tahmin eder.",
+                "İkinci ipucu gösterilir.",
+                "Katılımcı tahminini yeniden günceller.",
+                "Son olarak Sistem A mı yoksa Sistem B mi seçileceğine karar verir.",
+                "Denemenin sonunda doğru sistem gösterilir."
+              ],
+              after: [
+                "Bu yapı sayesinde, katılımcının yalnızca son cevabı değil, karar sürecindeki ara güncellemeleri de incelenebilir."
+              ]
+            },
+            {
+              title: "Bu çalışma neyi ölçüyor?",
+              paragraphs: [
+                "Çalışma; karar doğruluğu, olasılık tahminleri, iki aşama arasındaki güncelleme miktarı, tepki süreleri ve bazı öznel değerlendirmeleri ölçer. Katılımcılardan zaman zaman göreve dair güven düzeylerini veya sistemlerin genel işleyişine dair tahminlerini belirtmeleri de istenebilir.",
+                "Bu ölçümler, insanların belirsizlik altında bilgi toplama ve inanç güncelleme süreçlerini daha ayrıntılı biçimde analiz etmek için kullanılır."
+              ]
+            },
+            {
+              title: "Toplanan veriler nasıl kullanılacak?",
+              paragraphs: [
+                "Toplanan veriler akademik araştırma amacıyla kullanılacaktır. Veriler bireysel kimlik üzerinden değil, anonim bir katılımcı kodu üzerinden kaydedilir. Bu çalışmada amaç kişisel özellikleri değerlendirmek değil, genel karar verme ve akıl yürütme örüntülerini incelemektir.",
+                "Veriler analiz edilirken tek tek kişilerin performansından çok, katılımcılar arasında ortak görülen güncelleme örüntüleri incelenecektir."
+              ]
+            },
+            {
+              title: "Gönüllülük ve anonimlik",
+              paragraphs: [
+                "Bu çalışmaya katılım gönüllüdür. Katılımcılar istedikleri zaman çalışmadan ayrılabilir. Yanıtlar anonim olarak kaydedilir ve araştırma amacı dışında kullanılmaz.",
+                "Bu çalışma herhangi bir klinik değerlendirme, zekâ testi veya kişilik testi değildir. Verilen yanıtlar “kişisel başarı” ya da “yetenek” ölçümü olarak yorumlanmayacaktır. Amaç, insanların farklı bilgi koşulları altında kararlarını nasıl güncellediğini bilimsel olarak anlamaktır."
+              ]
+            },
+            {
+              title: "Çalışmanın önemi",
+              paragraphs: [
+                "Bu deneyden elde edilecek sonuçlar, insan akıl yürütmesinde bilginin yapısının ne kadar önemli olduğunu göstermeye yardımcı olabilir. Eğer insanlar farklı bilgi düzenlerinde farklı güncelleme stratejileri kullanıyorsa, bu durum karar verme, öğrenme, eğitim, yapay zekâ ile insan karşılaştırmaları ve bilişsel modelleme gibi alanlar için önemli sonuçlar doğurabilir.",
+                "Kısacası bu çalışma, insanların yalnızca “ne kadar bilgiye” sahip olduğuna değil, bu bilginin “nasıl organize edildiğine” de duyarlı olup olmadığını test etmeyi amaçlamaktadır."
+              ]
+            }
+          ]
         },
         simulation: {
           tableControl: "Kontrol",
@@ -388,12 +659,27 @@
         },
         end: {
           title: "Teşekkürler",
-          text: "Deneyi tamamladın. Bu sürümde veri otomatik olarak sunucuya gönderilmez; JSON çıktısını indirmen gerekir.",
+          text: "Deneyi tamamladın. Yanıtların Firebase'e kaydediliyor; JSON yedeğini de indirebilirsin.",
           trials: "Trial sayısı",
           accuracy: "Doğruluk",
           posterior: "Posterior yanıtı",
-          download: "JSON verisini indir",
-          restart: "Yeniden başlat"
+          saving: "Firebase'e kaydediliyor...",
+          saved: "Firebase'e kaydedildi.",
+          savedCount: "Firebase'e kaydedildi. Yazılan kayıt sayısı: {count}.",
+          saveFailed: "Firebase'e kaydedilemedi. Lütfen JSON yedeğini indir ya da tekrar dene.",
+          save: "Firebase'e kaydet",
+          saveRetry: "Firebase'e tekrar kaydet",
+          download: "JSON yedeğini indir",
+          restart: "Yeniden başlat",
+          debriefTitle: "Deney Sonrası Açıklama",
+          debriefParagraphs: [
+            "Bu çalışmada incelediğimiz temel konu, insanların farklı bilgi mimarileri altında inançlarını nasıl güncellediğidir.",
+            "Deneyde iki farklı bilgi düzeni kullanılmıştır. Bir bilgi düzeninde ipuçları tek başına da karar için anlamlı bilgi taşıyabilir. Diğer bilgi düzeninde ise tek bir ipucu tek başına yeterli değildir; karar için asıl bilgi iki ipucunun birlikte oluşturduğu örüntüden gelir.",
+            "Bu ayrım bilişsel bilimde ve bilgi kuramında önemli bir yere sahiptir. Bazı bilgiler birden fazla kaynak tarafından benzer biçimde taşınabilirken, bazı bilgiler yalnızca kaynaklar birlikte değerlendirildiğinde ortaya çıkar. Bu çalışma, insanların bu farklı bilgi yapılarını davranışsal olarak nasıl işlediğini anlamayı hedeflemektedir.",
+            "Deneyde sizden her denemede iki aşamalı olasılık tahmini alındı. Bunun nedeni yalnızca son kararınızı değil, kararınızın nasıl oluştuğunu da inceleyebilmektir. İlk ipucundan sonra verdiğiniz tahmin, tekil bilginin nasıl kullanıldığını; ikinci ipucundan sonra verdiğiniz tahmin ise yeni bilgi geldiğinde inancınızı nasıl güncellediğinizi göstermektedir.",
+            "Toplanan veriler, insanların hangi bilgi yapılarında daha hızlı, daha doğru veya daha sistematik güncelleme yaptığını analiz etmek için kullanılacaktır. Bu sayede insan akıl yürütmesinde bilginin miktarı kadar, bilginin yapısının da önemli olup olmadığı test edilecektir.",
+            "Katılımınız için teşekkür ederiz."
+          ]
         }
       },
       en: {
@@ -409,6 +695,11 @@
         topbar: {
           version: "Study version",
           participant: "Participant"
+        },
+        contact: {
+          title: "Contact",
+          text: "If you have any questions or feedback, please feel free to contact me. The study is conducted by Muhammed Bilgin; you can reach me at {email}.",
+          email: "mebilgin@mebilgin.com"
         },
         terms: {
           system: "System",
@@ -439,11 +730,95 @@
           p1: "In this study, you will estimate which of two hidden systems is active. In each trial, two sensor signals will be shown one after the other. After each signal, you will estimate the probability that System A is active on a scale from 0 to 100.",
           p2: "Participation is voluntary. You may leave the study at any time. Your responses will be stored with an anonymous participant code.",
           warningLabel: "Note:",
-          warning: "This HTML is a local JSON pilot version. Automatic server/Firebase saving should be added for real data collection.",
+          warning: "This pilot version saves responses to Firebase. If there is a connection problem, a JSON backup can be downloaded at the end.",
           pill1: "Two-stage posterior measurement",
           pill2: "Redundancy-dominant vs synergy-dominant",
           pill3: "Correct generative model",
-          button: "I consent and start"
+          button: "I consent and start",
+          starting: "Starting session...",
+          aboutTitle: "About the Study",
+          aboutSections: [
+            {
+              title: "What is the purpose of this study?",
+              paragraphs: [
+                "This study aims to understand how people combine information when making decisions under uncertainty. In everyday life, we often do not rely on a single piece of information. Instead, we evaluate cues from different sources together with our prior expectations and new feedback.",
+                "For example, a physician may combine several test results when making a diagnosis, an investor may consider different market indicators, and a student may use prior knowledge together with newly provided clues when solving a problem. In such situations, it is not only the amount of information that matters, but also how that information is organized.",
+                "This experiment is designed to measure how people use cues presented in different forms and how they update their beliefs based on those cues."
+              ]
+            },
+            {
+              title: "Why are we running this experiment?",
+              paragraphs: [
+                "Many studies on human reasoning and decision-making examine how accurately people update their beliefs when they receive new evidence. However, many of these studies do not sufficiently distinguish the structure of the information. Two sources may appear to carry the same amount of information, but they can play different roles in the decision process.",
+                "In some situations, a cue can be meaningful on its own. In other situations, a single cue may not be enough, and the meaning may emerge only when multiple cues are considered together. This distinction is important for understanding which information people attend to, when they update their beliefs, and which information structures are more difficult for them.",
+                "For this reason, participants in this experiment give probability judgments in a two-stage estimation task. In each trial, participants first see one cue and then a second cue. At each stage, they estimate the probability that System A is active. This makes it possible to measure not only the final decision, but also how that decision is formed."
+              ]
+            },
+            {
+              title: "Why do we need to collect this data?",
+              paragraphs: [
+                "The main question of this study is not simply whether people make correct or incorrect decisions. The main goal is to understand which information structures people are more sensitive to when they update their beliefs.",
+                "Real participant data is needed for this. Computer simulations can show which estimate would be normatively expected, but only behavioral data can show how people actually use that information, at which stage they update, and which cues they overweight or underweight.",
+                "The data collected in this study will help answer the following questions:"
+              ],
+              bullets: [
+                "How much do people update their beliefs after seeing the first cue?",
+                "How do they change their previous estimate when the second cue appears?",
+                "Do different information structures produce different updating patterns within the same decision task?",
+                "Is there a difference between information given in advance and information learned through experience?",
+                "How do people's final choices differ from their intermediate probability estimates?"
+              ],
+              after: [
+                "These questions are important for understanding human reasoning not only in terms of outcomes, but also in terms of the process that leads to those outcomes."
+              ]
+            },
+            {
+              title: "What will participants do in the experiment?",
+              paragraphs: [
+                "There are two possible systems in the experiment: System A and System B. In each trial, one of these systems is active. The participant's task is to use the cues provided and estimate which system is active.",
+                "Each trial consists of several steps:"
+              ],
+              steps: [
+                "The first cue is shown.",
+                "The participant estimates the probability that System A is active on a scale from 0 to 100.",
+                "The second cue is shown.",
+                "The participant updates their estimate.",
+                "The participant then decides whether to choose System A or System B.",
+                "At the end of the trial, the correct system is shown."
+              ],
+              after: [
+                "This structure allows us to examine not only the participant's final answer, but also the intermediate updates in the decision process."
+              ]
+            },
+            {
+              title: "What does this study measure?",
+              paragraphs: [
+                "The study measures decision accuracy, probability estimates, the amount of updating between two stages, reaction times, and some subjective evaluations. Participants may also occasionally be asked to report their confidence in the task or their estimates about how the systems work overall.",
+                "These measures are used to analyze in more detail how people gather information and update their beliefs under uncertainty."
+              ]
+            },
+            {
+              title: "How will the collected data be used?",
+              paragraphs: [
+                "The collected data will be used for academic research. The data are recorded with an anonymous participant code rather than through personal identity. The aim of this study is not to evaluate personal traits, but to examine general patterns of decision-making and reasoning.",
+                "During analysis, the focus will be on updating patterns shared across participants rather than on the performance of individual people."
+              ]
+            },
+            {
+              title: "Voluntary participation and anonymity",
+              paragraphs: [
+                "Participation in this study is voluntary. Participants may leave the study at any time. Responses are recorded anonymously and will not be used outside the purpose of research.",
+                "This study is not a clinical assessment, intelligence test, or personality test. Responses will not be interpreted as a measure of personal success or ability. The goal is to scientifically understand how people update their decisions under different information conditions."
+              ]
+            },
+            {
+              title: "Why is this study important?",
+              paragraphs: [
+                "The results of this experiment may help show how important the structure of information is in human reasoning. If people use different updating strategies under different information structures, this may have important implications for decision-making, learning, education, comparisons between humans and artificial intelligence, and cognitive modeling.",
+                "In short, this study aims to test whether people are sensitive not only to how much information they have, but also to how that information is organized."
+              ]
+            }
+          ]
         },
         simulation: {
           tableControl: "Check",
@@ -570,12 +945,27 @@
         },
         end: {
           title: "Thank you",
-          text: "You completed the experiment. In this version, data is not sent to a server automatically; you need to download the JSON output.",
+          text: "You completed the experiment. Your responses are being saved to Firebase; you can also download a JSON backup.",
           trials: "Trials",
           accuracy: "Accuracy",
           posterior: "Posterior responses",
-          download: "Download JSON data",
-          restart: "Restart"
+          saving: "Saving to Firebase...",
+          saved: "Saved to Firebase.",
+          savedCount: "Saved to Firebase. Records written: {count}.",
+          saveFailed: "Could not save to Firebase. Please download the JSON backup or try again.",
+          save: "Save to Firebase",
+          saveRetry: "Try Firebase again",
+          download: "Download JSON backup",
+          restart: "Restart",
+          debriefTitle: "Post-Experiment Explanation",
+          debriefParagraphs: [
+            "The main topic examined in this study is how people update their beliefs under different information architectures.",
+            "The experiment used two different information structures. In one structure, each cue can carry meaningful information for the decision on its own. In the other structure, a single cue is not sufficient by itself; the key information for the decision comes from the pattern formed by the two cues together.",
+            "This distinction is important in cognitive science and information theory. Some information can be carried in similar ways by multiple sources, while other information emerges only when sources are evaluated together. This study aims to understand how people process these different information structures behaviorally.",
+            "In the experiment, you provided two-stage probability estimates in each trial. The reason for this was to examine not only your final decision, but also how that decision was formed. Your estimate after the first cue shows how individual information was used; your estimate after the second cue shows how you updated your belief when new information arrived.",
+            "The collected data will be used to analyze under which information structures people update more quickly, more accurately, or more systematically. In this way, the study will test whether the structure of information matters in human reasoning as much as the amount of information.",
+            "Thank you for your participation."
+          ]
         }
       }
     };
@@ -627,7 +1017,15 @@
       postTaskResponses: [],
       qualityEvents: [],
       startedAt: Date.now(),
-      blockStartedAt: null
+      blockStartedAt: null,
+      firebase: {
+        started: false,
+        saved: false,
+        saving: false,
+        error: null,
+        uid: null,
+        lastResult: null
+      }
     };
 
     function interpolate(template, values = {}) {
@@ -693,6 +1091,45 @@
       return `${t("terms.system")} ${system}`;
     }
 
+    function studyAboutHtml() {
+      const sections = t("consent.aboutSections") || [];
+      const renderParagraphs = paragraphs => (paragraphs || []).map(text => `<p>${text}</p>`).join("");
+      return `
+        <section class="study-about">
+          <h2>${t("consent.aboutTitle")}</h2>
+          ${sections.map(section => `
+            <section>
+              <h3>${section.title}</h3>
+              ${renderParagraphs(section.paragraphs)}
+              ${section.bullets ? `<ul>${section.bullets.map(item => `<li>${item}</li>`).join("")}</ul>` : ""}
+              ${section.steps ? `<ol>${section.steps.map(item => `<li>${item}</li>`).join("")}</ol>` : ""}
+              ${renderParagraphs(section.after)}
+            </section>
+          `).join("")}
+        </section>
+      `;
+    }
+
+    function studyDebriefHtml() {
+      return `
+        <section class="study-debrief">
+          <h2>${t("end.debriefTitle")}</h2>
+          ${(t("end.debriefParagraphs") || []).map(text => `<p>${text}</p>`).join("")}
+        </section>
+      `;
+    }
+
+    function studyContactHtml() {
+      const email = t("contact.email");
+      const emailLink = `<a href="mailto:${email}">${email}</a>`;
+      return `
+        <section class="study-contact">
+          <h2>${t("contact.title")}</h2>
+          <p>${t("contact.text", { email: emailLink })}</p>
+        </section>
+      `;
+    }
+
     updateDocumentLanguage();
 
     function shuffle(array) {
@@ -731,6 +1168,16 @@
       state.qualityEvents.push(row);
       logEvent(eventType);
       return row;
+    }
+
+    function getClientInfo() {
+      return {
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        viewport_width: window.innerWidth,
+        viewport_height: window.innerHeight,
+        device_pixel_ratio: window.devicePixelRatio
+      };
     }
 
     function clamp01(p) {
@@ -934,12 +1381,14 @@
         <div class="button-row" style="margin-top:0">${languageSelectorHtml()}</div>
         <p>${t("consent.p1")}</p>
         <p>${t("consent.p2")}</p>
+        ${studyAboutHtml()}
         <p class="warning"><strong>${t("consent.warningLabel")}</strong> ${t("consent.warning")}</p>
         <div class="pill-row">
           <span class="pill">${t("consent.pill1")}</span>
           <span class="pill">${t("consent.pill2")}</span>
           <span class="pill">${t("consent.pill3")}</span>
         </div>
+        ${studyContactHtml()}
         <div class="button-row">
           <button id="consentBtn">${t("consent.button")}</button>
           ${debugButton}
@@ -947,9 +1396,31 @@
       `);
       bindLanguageSelector();
 
-      document.getElementById("consentBtn").onclick = () => {
+      document.getElementById("consentBtn").onclick = async () => {
+        const button = document.getElementById("consentBtn");
+        button.disabled = true;
+        button.textContent = t("consent.starting");
         state.consentGiven = true;
         logEvent("consent_given", { consent_given: true, language: state.language });
+
+        try {
+          const firebaseSession = await startFirebaseSession({
+            config: CONFIG,
+            participantId: state.participantId,
+            sessionId: state.sessionId,
+            lang: state.language,
+            clientInfo: getClientInfo()
+          });
+          state.firebase.started = true;
+          state.firebase.uid = firebaseSession.uid;
+          state.firebase.error = null;
+          logEvent("firebase_session_started", { uid: firebaseSession.uid });
+        } catch (error) {
+          state.firebase.started = false;
+          state.firebase.error = String(error?.message || error);
+          logEvent("firebase_session_error", { error: state.firebase.error });
+        }
+
         generateTrials();
         showInstructions();
       };
@@ -1894,6 +2365,7 @@
           experiment_version: CONFIG.experimentVersion,
           schema_version: CONFIG.schemaVersion,
           simulated: false,
+          lang: state.language,
           language: state.language,
           prior_type: state.priorType,
           architecture_order: state.architectureOrder,
@@ -1942,13 +2414,50 @@
       URL.revokeObjectURL(url);
     }
 
+    function setSaveStatus(message, isError = false) {
+      const status = document.getElementById("saveStatus");
+      if (!status) return;
+      status.textContent = message;
+      status.className = isError ? "warning" : "muted";
+    }
+
     async function saveData() {
-      // Replace this function with Firebase/Supabase/server POST for real data collection.
-      // For now, local download is the safest transparent behavior.
-      recordQualityEvent("save_attempt");
-      recordQualityEvent("save_success");
-      downloadJson();
-      return true;
+      if (state.firebase.saving) return false;
+
+      const saveButton = document.getElementById("saveBtn");
+      state.firebase.saving = true;
+      state.firebase.error = null;
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = t("end.saving");
+      }
+      setSaveStatus(t("end.saving"));
+
+      try {
+        recordQualityEvent("firebase_save_attempt");
+        const data = buildExport();
+        const result = await saveExperimentData(data);
+        state.firebase.saved = true;
+        state.firebase.lastResult = result;
+        recordQualityEvent("firebase_save_success");
+        setSaveStatus(t("end.savedCount", { count: result.committed }));
+        if (saveButton) {
+          saveButton.textContent = t("end.saved");
+        }
+        return true;
+      } catch (error) {
+        state.firebase.saved = false;
+        state.firebase.error = String(error?.message || error);
+        recordQualityEvent("firebase_save_error");
+        setSaveStatus(`${t("end.saveFailed")} ${state.firebase.error}`, true);
+        if (saveButton) {
+          saveButton.disabled = false;
+          saveButton.textContent = t("end.saveRetry");
+        }
+        return false;
+      } finally {
+        state.firebase.saving = false;
+      }
     }
 
     function showEnd() {
@@ -1956,21 +2465,27 @@
       renderShell(`
         <h2>${t("end.title")}</h2>
         <p>${t("end.text")}</p>
+        <p id="saveStatus" class="muted">${t("end.saving")}</p>
+        ${studyDebriefHtml()}
+        ${studyContactHtml()}
         <div class="small-grid">
           <div class="metric">${t("end.trials")}<strong>${state.finalChoices.length}</strong></div>
           <div class="metric">${t("end.accuracy")}<strong>${percent(accuracy)}</strong></div>
           <div class="metric">${t("end.posterior")}<strong>${state.stageResponses.length}</strong></div>
         </div>
         <div class="button-row">
-          <button id="downloadBtn">${t("end.download")}</button>
+          <button id="saveBtn">${t("end.save")}</button>
+          <button class="secondary" id="downloadBtn">${t("end.download")}</button>
           ${CONFIG.allowRestart ? `<button class="secondary" id="restartBtn">${t("end.restart")}</button>` : ""}
         </div>
       `);
 
-      document.getElementById("downloadBtn").onclick = saveData;
+      document.getElementById("saveBtn").onclick = saveData;
+      document.getElementById("downloadBtn").onclick = downloadJson;
       if (CONFIG.allowRestart) {
         document.getElementById("restartBtn").onclick = () => window.location.reload();
       }
+      saveData();
     }
 
     /**********************************************************************
