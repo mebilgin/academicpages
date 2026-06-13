@@ -1,0 +1,144 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Task overview and information architectures</title>
+  <desc id="desc">A NeurIPS-style schematic showing the sequential belief-updating task and the difference between redundancy-dominant and synergy-dominant evidence structures.</desc>
+
+  <defs>
+    <style>
+      .fig-title { font: 600 24px Arial, Helvetica, sans-serif; fill: #111111; }
+      .panel-title { font: 600 20px Arial, Helvetica, sans-serif; fill: #111111; }
+      .step-title { font: 600 17px Arial, Helvetica, sans-serif; fill: #111111; text-anchor: middle; }
+      .step-sub { font: 400 14px Arial, Helvetica, sans-serif; fill: #444444; text-anchor: middle; }
+      .body { font: 400 16px Arial, Helvetica, sans-serif; fill: #222222; }
+      .small { font: 400 14px Arial, Helvetica, sans-serif; fill: #555555; }
+      .caption { font: 400 15px Arial, Helvetica, sans-serif; fill: #333333; }
+      .accent { fill: #1f77b4; stroke: #1f77b4; }
+      .box { fill: #ffffff; stroke: #222222; stroke-width: 1.5; }
+      .panel { fill: #ffffff; stroke: #222222; stroke-width: 1.2; }
+      .axis { stroke: #666666; stroke-width: 1.2; }
+      .line-main { fill: none; stroke: #1f77b4; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+      .line-alt { fill: none; stroke: #444444; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 4 4; }
+    </style>
+
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#222222"></path>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"></rect>
+
+  <!-- Figure title -->
+  <text x="90" y="55" class="fig-title">Figure 1. Sequential belief-updating task and information architectures</text>
+
+  <!-- ===================== Panel A ===================== -->
+  <text x="90" y="105" class="panel-title">A. Task overview</text>
+  <rect x="80" y="125" width="1440" height="250" class="panel"></rect>
+
+  <!-- Main task flow -->
+  <rect x="130" y="205" width="180" height="80" rx="8" class="box"></rect>
+  <text x="220" y="238" class="step-title">Hidden state</text>
+  <text x="220" y="260" class="step-sub">System A or System B</text>
+
+  <rect x="380" y="205" width="130" height="80" rx="8" class="box"></rect>
+  <text x="445" y="238" class="step-title">Cue 1</text>
+  <text x="445" y="260" class="step-sub">first observation</text>
+
+  <rect x="580" y="205" width="180" height="80" rx="8" class="box"></rect>
+  <text x="670" y="232" class="step-title">Posterior report 1</text>
+  <text x="670" y="254" class="step-sub">belief after Cue 1</text>
+  <text x="670" y="273" class="step-sub">report P(A)</text>
+
+  <rect x="830" y="205" width="130" height="80" rx="8" class="box"></rect>
+  <text x="895" y="238" class="step-title">Cue 2</text>
+  <text x="895" y="260" class="step-sub">second observation</text>
+
+  <rect x="1030" y="205" width="180" height="80" rx="8" class="box"></rect>
+  <text x="1120" y="232" class="step-title">Posterior report 2</text>
+  <text x="1120" y="254" class="step-sub">updated belief</text>
+  <text x="1120" y="273" class="step-sub">report P(A)</text>
+
+  <rect x="1280" y="205" width="160" height="80" rx="8" class="box"></rect>
+  <text x="1360" y="238" class="step-title">Final choice</text>
+  <text x="1360" y="260" class="step-sub">choose A or B</text>
+
+  <!-- arrows -->
+  <line x1="310" y1="245" x2="380" y2="245" stroke="#222222" stroke-width="1.8" marker-end="url(#arrow)"></line>
+  <line x1="510" y1="245" x2="580" y2="245" stroke="#222222" stroke-width="1.8" marker-end="url(#arrow)"></line>
+  <line x1="760" y1="245" x2="830" y2="245" stroke="#222222" stroke-width="1.8" marker-end="url(#arrow)"></line>
+  <line x1="960" y1="245" x2="1030" y2="245" stroke="#222222" stroke-width="1.8" marker-end="url(#arrow)"></line>
+  <line x1="1210" y1="245" x2="1280" y2="245" stroke="#222222" stroke-width="1.8" marker-end="url(#arrow)"></line>
+
+  <!-- Lower note in Panel A -->
+  <text x="130" y="330" class="body">
+    Models are evaluated by comparing their stage-wise posterior trajectories against
+  </text>
+  <text x="130" y="355" class="body">
+    (i) Bayesian posterior targets and (ii) human participant trajectories.
+  </text>
+
+  <!-- ===================== Panel B ===================== -->
+  <text x="90" y="425" class="panel-title">B. Information architectures</text>
+  <rect x="80" y="445" width="1440" height="360" class="panel"></rect>
+
+  <!-- Left architecture -->
+  <rect x="120" y="490" width="620" height="260" class="box"></rect>
+  <text x="150" y="525" class="panel-title">Redundancy-dominant</text>
+  <text x="150" y="555" class="body">Information is carried by individual cues.</text>
+  <text x="150" y="582" class="body">Each cue is separately diagnostic of the hidden state.</text>
+  <text x="150" y="609" class="body">Expected pattern: posterior separation after Cue 1.</text>
+
+  <!-- mini plot redundancy -->
+  <line x1="470" y1="700" x2="700" y2="700" class="axis"></line>
+  <line x1="470" y1="700" x2="470" y2="550" class="axis"></line>
+  <text x="452" y="555" class="small" transform="rotate(-90 452 555)">P(A)</text>
+  <text x="515" y="722" class="small">Cue 1</text>
+  <text x="640" y="722" class="small">Cue 2</text>
+
+  <!-- two contrasting trajectories -->
+  <polyline points="495,665 565,615 665,575" class="line-main"></polyline>
+  <polyline points="495,685 565,705 665,715" class="line-alt"></polyline>
+
+  <circle cx="495" cy="665" r="3.5" fill="#1f77b4"></circle>
+  <circle cx="565" cy="615" r="3.5" fill="#1f77b4"></circle>
+  <circle cx="665" cy="575" r="3.5" fill="#1f77b4"></circle>
+
+  <circle cx="495" cy="685" r="3.5" fill="#444444"></circle>
+  <circle cx="565" cy="705" r="3.5" fill="#444444"></circle>
+  <circle cx="665" cy="715" r="3.5" fill="#444444"></circle>
+
+  <text x="470" y="748" class="small">Early diagnostic contrast</text>
+
+  <!-- Right architecture -->
+  <rect x="860" y="490" width="620" height="260" class="box"></rect>
+  <text x="890" y="525" class="panel-title">Synergy-dominant</text>
+  <text x="890" y="555" class="body">Information is carried by the relation between cues.</text>
+  <text x="890" y="582" class="body">Single cues are marginally uninformative.</text>
+  <text x="890" y="609" class="body">Expected pattern: little separation at Cue 1, separation after Cue 2.</text>
+
+  <!-- mini plot synergy -->
+  <line x1="1210" y1="700" x2="1440" y2="700" class="axis"></line>
+  <line x1="1210" y1="700" x2="1210" y2="550" class="axis"></line>
+  <text x="1192" y="555" class="small" transform="rotate(-90 1192 555)">P(A)</text>
+  <text x="1255" y="722" class="small">Cue 1</text>
+  <text x="1380" y="722" class="small">Cue 2</text>
+
+  <polyline points="1235,655 1305,652 1405,585" class="line-main"></polyline>
+  <polyline points="1235,675 1305,678 1405,715" class="line-alt"></polyline>
+
+  <circle cx="1235" cy="655" r="3.5" fill="#1f77b4"></circle>
+  <circle cx="1305" cy="652" r="3.5" fill="#1f77b4"></circle>
+  <circle cx="1405" cy="585" r="3.5" fill="#1f77b4"></circle>
+
+  <circle cx="1235" cy="675" r="3.5" fill="#444444"></circle>
+  <circle cx="1305" cy="678" r="3.5" fill="#444444"></circle>
+  <circle cx="1405" cy="715" r="3.5" fill="#444444"></circle>
+
+  <text x="1210" y="748" class="small">Late diagnostic contrast</text>
+
+  <!-- Footer note -->
+  <text x="90" y="855" class="caption">
+    The benchmark tests whether models update beliefs at the correct stage and whether posterior trajectories reflect
+  </text>
+  <text x="90" y="878" class="caption">
+    the structure of evidence: individually diagnostic cues versus relation-dependent evidence.
+  </text>
+</svg>
