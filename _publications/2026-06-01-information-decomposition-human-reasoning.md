@@ -15,6 +15,16 @@ website: 'x.com/itsmebilgin'
 citation: 'Bilgin, D. (2024). "Information Decomposition Shapes Human Reasoning" `<i>`conference `</i>`.'
 ---
 
+## Read the paper
+
+- Paper: [arXiv link coming soon](#)
+- Code and data: [GitHub link coming soon](#)
+- Figures and benchmark materials: [Project page coming soon](#)
+
+If you are interested in LLM evaluation, Bayesian reasoning, cognitive science, or process-level supervision, I would be happy to discuss.
+
+## Introduction
+
 When making a decision, we usually ask: How much evidence is there?
 
 But perhaps there is another question that is just as important:

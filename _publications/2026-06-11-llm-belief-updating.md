@@ -7,13 +7,24 @@ excerpt: 'The contents above will be part of a list of publications, if the user
 date: 2026-06-11
 venue: 'conference'
 authors: '<strong>M. Emre Bilgin</strong>'
-tldr: 'We propose VERIFIER, a cross-validation reasoning framework where multiple agents debate to improve the reliability and accuracy of reasoning under uncertainty.'
+tldr: 'Final-answer accuracy can hide important failures in LLM reasoning. We introduce a human-grounded, Bayesian-referenced benchmark showing that many LLMs fail to update their beliefs at the right time and for the right kind of evidence. We call this failure mode information-architecture blindness: weak sensitivity to whether evidence is carried by individual cues or by relations between cues.'
 paperurl: 'https://academicpages.github.io/files/paper3.pdf'
 arxiv: 'x.com/itsmebilgin'
 github: 'x.com/itsmebilgin'
 website: 'x.com/itsmebilgin'
 citation: 'Bilgin, D. (2024). "Beyond Final Answers: Information-Architecture Blindness in LLM Belief Updating" `<i>`conference `</i>`.'
 ---
+
+## Read the paper
+
+- Paper: [arXiv link coming soon](#)
+- Code and data: [GitHub link coming soon](#)
+- Figures and benchmark materials: [Project page coming soon](#)
+
+If you are interested in LLM evaluation, Bayesian reasoning, cognitive science, or process-level supervision, I would be happy to discuss.
+
+
+## Introduction
 
 Most LLM benchmarks ask a simple question: **did the model get the final answer right?**
 
@@ -93,11 +104,3 @@ This study uses a controlled text-only replay protocol. That gives us clean Baye
 A natural next step is to extend the same benchmark to **vision-language models**, using the original human experimental interface. This would test whether models can both perceive the visual cue display and update beliefs according to the same information architecture.
 
 More broadly, we want to understand when LLMs merely produce plausible answers, and when they actually track the structure of evidence over time.
-
-## Read the paper
-
-- Paper: [arXiv link coming soon](#)
-- Code and data: [GitHub link coming soon](#)
-- Figures and benchmark materials: [Project page coming soon](#)
-
-If you are interested in LLM evaluation, Bayesian reasoning, cognitive science, or process-level supervision, I would be happy to discuss.

@@ -17,6 +17,16 @@ website: 'x.com/itsmebilgin'
 citation: 'Bilgin, D. (2024). "A Partially Shared Latent Neural Space for Deductive Reasoning" `<i>`conference `</i>`.'
 ---
 
+## Read more
+
+* Paper: [link coming soon](#)
+* Code and data: [GitHub link coming soon](#)
+* Project page: [link coming soon](#)
+
+If you are interested in reasoning, cognitive neuroscience, latent-variable modeling, or task-based functional connectivity, I would be happy to discuss.
+
+## Introduction
+
 Most fMRI studies of reasoning ask a familiar question:
 
 **Which brain regions become more active when people reason?**
@@ -123,10 +133,4 @@ Reasoning may not be best understood as a list of active regions.
 
 It may be better understood as a structured neural state space.
 
-## Read more
 
-* Paper: [link coming soon](#)
-* Code and data: [GitHub link coming soon](#)
-* Project page: [link coming soon](#)
-
-If you are interested in reasoning, cognitive neuroscience, latent-variable modeling, or task-based functional connectivity, I would be happy to discuss.
